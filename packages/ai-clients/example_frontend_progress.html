@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Progress Bar Examples</title>
+    <style>
+        .progress-container { margin: 20px 0; }
+        .progress-bar { 
+            width: 100%; 
+            height: 20px; 
+            background: #f0f0f0; 
+            border-radius: 10px; 
+            overflow: hidden;
+        }
+        .progress-fill { 
+            height: 100%; 
+            background: #007acc; 
+            transition: width 0.3s ease;
+            border-radius: 10px;
+        }
+        .progress-text { margin: 10px 0; font-weight: bold; }
+        .log { 
+            background: #f5f5f5; 
+            padding: 10px; 
+            height: 200px; 
+            overflow-y: auto; 
+            font-family: monospace; 
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Book Generation Progress Examples</h1>
+    
+    <!-- Option 1: Server-Sent Events -->
+    <div class="progress-container">
+        <h2>Option 1: Server-Sent Events (Real-time)</h2>
+        <div class="progress-text" id="sse-status">Ready to start...</div>
+        <div class="progress-bar">
+            <div class="progress-fill" id="sse-progress" style="width: 0%"></div>
+        </div>
+        <button onclick="startSSEGeneration()">Start with SSE</button>
+        <div class="log" id="sse-log"></div>
+    </div>
+    
+    <!-- Option 2: Polling -->
+    <div class="progress-container">
+        <h2>Option 2: Polling (Simple)</h2>
+        <div class="progress-text" id="poll-status">Ready to start...</div>
+        <div class="progress-bar">
+            <div class="progress-fill" id="poll-progress" style="width: 0%"></div>
+        </div>
+        <button onclick="startPollingGeneration()">Start with Polling</button>
+        <div class="log" id="poll-log"></div>
+    </div>
+
+    <script>
+        // Option 1: Server-Sent Events
+        function startSSEGeneration() {
+            const statusEl = document.getElementById('sse-status');
+            const progressEl = document.getElementById('sse-progress');
+            const logEl = document.getElementById('sse-log');
+            
+            statusEl.textContent = 'Connecting...';
+            logEl.innerHTML = '';
+            
+            const eventSource = new EventSource('/generate-book-chapters-stream', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({
+                    title: 'Test Book',
+                    author: 'Test Author', 
+                    book_idea: 'A test book idea',
+                    chapters_to_generate: [1, 2, 3]
+                })
+            });
+            
+            eventSource.onmessage = function(event) {
+                const data = JSON.parse(event.data);
+                
+                logEl.innerHTML += `${new Date().toLocaleTimeString()}: ${JSON.stringify(data)}\n`;
+                logEl.scrollTop = logEl.scrollHeight;
+                
+                if (data.step === 'toc') {
+                    statusEl.textContent = data.message;
+                    progressEl.style.width = '20%';
+                } else if (data.step === 'chapter') {
+                    statusEl.textContent = data.message;
+                    progressEl.style.width = data.progress + '%';
+                } else if (data.step === 'complete') {
+                    statusEl.textContent = 'Complete!';
+                    progressEl.style.width = '100%';
+                    eventSource.close();
+                }
+            };
+            
+            eventSource.onerror = function() {
+                statusEl.textContent = 'Connection error';
+                eventSource.close();
+            };
+        }
+        
+        // Option 2: Polling
+        async function startPollingGeneration() {
+            const statusEl = document.getElementById('poll-status');
+            const progressEl = document.getElementById('poll-progress');
+            const logEl = document.getElementById('poll-log');
+            
+            statusEl.textContent = 'Starting...';
+            logEl.innerHTML = '';
+            
+            try {
+                // Start generation
+                const startResp = await fetch('/generate-book-chapters-async', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        title: 'Test Book',
+                        author: 'Test Author',
+                        book_idea: 'A test book idea', 
+                        chapters_to_generate: [1, 2, 3]
+                    })
+                });
+                
+                const startData = await startResp.json();
+                const jobId = startData.job_id;
+                
+                // Poll for progress
+                const pollInterval = setInterval(async () => {
+                    try {
+                        const progressResp = await fetch(`/progress/${jobId}`);
+                        const progressData = await progressResp.json();
+                        
+                        logEl.innerHTML += `${new Date().toLocaleTimeString()}: ${JSON.stringify(progressData)}\n`;
+                        logEl.scrollTop = logEl.scrollHeight;
+                        
+                        statusEl.textContent = progressData.message;
+                        progressEl.style.width = progressData.progress + '%';
+                        
+                        if (progressData.status === 'completed' || progressData.status === 'failed') {
+                            clearInterval(pollInterval);
+                            if (progressData.status === 'completed') {
+                                statusEl.textContent = 'Generation complete!';
+                                console.log('Result:', progressData.result);
+                            } else {
+                                statusEl.textContent = 'Generation failed: ' + progressData.error;
+                            }
+                        }
+                    } catch (error) {
+                        console.error('Polling error:', error);
+                        clearInterval(pollInterval);
+                        statusEl.textContent = 'Polling error';
+                    }
+                }, 1000); // Poll every second
+                
+            } catch (error) {
+                statusEl.textContent = 'Start error: ' + error.message;
+            }
+        }
+    </script>
+</body>
+</html>

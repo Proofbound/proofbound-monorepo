@@ -1,0 +1,348 @@
+import pytest
+import json
+from unittest.mock import patch, Mock, MagicMock
+from fastapi.testclient import TestClient
+from io import BytesIO
+from PIL import Image
+
+# Skip tests if WeasyPrint dependencies are not available
+pytest_skip_reason = None
+try:
+    import app as main_app
+except ImportError as e:
+    if "libgobject" in str(e) or "weasyprint" in str(e).lower():
+        pytest_skip_reason = f"WeasyPrint system dependencies not available: {e}"
+        main_app = None
+    else:
+        raise
+
+
+@pytest.mark.skipif(pytest_skip_reason is not None, reason=pytest_skip_reason)
+class TestFullApp:
+    """Test the full app.py FastAPI application."""
+
+    @pytest.fixture
+    def client(self, mock_env_vars):
+        """Create test client with mocked environment."""
+        with patch('app.openai_client'), \
+             patch('app.replicate_client'), \
+             patch('app.pypandoc.get_pandoc_version'):
+            return TestClient(main_app.app)
+
+    def test_test_endpoint(self, client):
+        """Test the /test endpoint."""
+        response = client.get("/test")
+        
+        assert response.status_code == 200
+        data = response.json()
+        assert data["message"] == "API is up and running!!!"
+        expected_endpoints = ["/toc", "/draft", "/pdf", "/cover"]
+        for endpoint in expected_endpoints:
+            assert endpoint in data["available_endpoints"]
+
+    def test_toc_endpoint_success(self, client, sample_toc_request, sample_toc_response):
+        """Test successful TOC generation."""
+        with patch('app.ask_llm') as mock_ask_llm:
+            mock_ask_llm.return_value = json.dumps(sample_toc_response)
+            
+            response = client.post("/toc", json=sample_toc_request)
+        
+        assert response.status_code == 200
+        data = response.json()
+        assert isinstance(data, list)
+        assert len(data) == 2
+        assert data[0]["section_name"] == "Introduction to Testing"
+
+    def test_draft_endpoint_success(self, client, sample_draft_request):
+        """Test successful draft generation."""
+        mock_markdown = "# Chapter 1\n\nThis is the generated content."
+        
+        with patch('app.ask_llm') as mock_ask_llm:
+            mock_ask_llm.return_value = mock_markdown
+            
+            response = client.post("/draft", json=sample_draft_request)
+        
+        assert response.status_code == 200
+        data = response.json()
+        assert "markdown" in data
+        assert data["markdown"] == mock_markdown
+
+    def test_pdf_endpoint_success(self, client, sample_pdf_request, mock_pypandoc, mock_weasyprint):
+        """Test successful PDF generation."""
+        with patch('app.ask_llm') as mock_ask_llm:
+            mock_ask_llm.return_value = "Generated content"
+            
+            response = client.post("/pdf", json=sample_pdf_request)
+        
+        assert response.status_code == 200
+        assert response.headers["content-type"] == "application/pdf"
+
+    def test_cover_endpoint_success(self, client, sample_cover_request, mock_replicate_client):
+        """Test successful cover generation."""
+        # Mock image generation
+        mock_replicate_client.run.return_value = ["https://example.com/front.jpg", "https://example.com/back.jpg"]
+        
+        # Mock image downloading and processing
+        with patch('app.requests.get') as mock_get, \
+             patch('app.create_cover_image') as mock_create_cover, \
+             patch('app.generate_pdf_from_html') as mock_pdf:
+            
+            # Mock image response
+            mock_response = Mock()
+            mock_response.content = b"fake_image_data"
+            mock_get.return_value = mock_response
+            
+            # Mock cover creation
+            mock_image = Mock()
+            mock_create_cover.return_value = (mock_image, (10, 9, 6, 1, 6))
+            
+            # Mock PDF generation
+            mock_pdf.return_value = b"fake_pdf_data"
+            
+            response = client.post("/cover", json=sample_cover_request)
+        
+        assert response.status_code == 200
+        assert response.headers["content-type"] == "application/pdf"
+
+
+@pytest.mark.skipif(pytest_skip_reason is not None, reason=pytest_skip_reason)
+class TestHelperFunctions:
+    """Test helper functions in app.py."""
+
+    def test_ask_llm_success(self, mock_env_vars):
+        """Test successful LLM call."""
+        expected_content = "Test response from LLM"
+        
+        with patch('app.openai_client') as mock_client:
+            mock_response = Mock()
+            mock_response.choices[0].message.content = expected_content
+            mock_client.chat.completions.create.return_value = mock_response
+            
+            result = main_app.ask_llm("Test prompt")
+        
+        assert result == expected_content
+
+    def test_ask_llm_exception(self, mock_env_vars):
+        """Test LLM call with exception."""
+        with patch('app.openai_client') as mock_client:
+            mock_client.chat.completions.create.side_effect = Exception("API Error")
+            
+            result = main_app.ask_llm("Test prompt", default="fallback")
+            assert result == "fallback"
+
+    def test_markdown_to_html(self, mock_pypandoc):
+        """Test markdown to HTML conversion."""
+        mock_pypandoc.return_value = "<h1>Test</h1>"
+        
+        result = main_app.markdown_to_html("# Test")
+        assert result == "<h1>Test</h1>"
+        mock_pypandoc.assert_called_once_with("# Test", 'html', format='md')
+
+    def test_inches_to_px(self):
+        """Test inches to pixels conversion."""
+        result = main_app.inches_to_px(1.0, 300)
+        assert result == 300
+        
+        result = main_app.inches_to_px(2.5, 150)
+        assert result == 375
+
+    def test_image_bytes_to_base64(self):
+        """Test image bytes to base64 conversion."""
+        # Create a simple test image
+        img = Image.new('RGB', (10, 10), color='red')
+        buf = BytesIO()
+        img.save(buf, format='PNG')
+        img_bytes = buf.getvalue()
+        
+        result = main_app.image_bytes_to_base64(img_bytes)
+        assert result.startswith("data:image/png;base64,")
+        assert len(result) > 50  # Should have substantial base64 content
+
+    def test_generate_pdf_from_html(self, mock_weasyprint):
+        """Test PDF generation from HTML."""
+        test_html = "<html><body><h1>Test</h1></body></html>"
+        mock_weasyprint.write_pdf.return_value = b"fake_pdf_content"
+        
+        with patch('app.HTML') as mock_html:
+            mock_html.return_value = mock_weasyprint
+            result = main_app.generate_pdf_from_html(test_html)
+        
+        assert isinstance(result, bytes)
+
+
+@pytest.mark.skipif(pytest_skip_reason is not None, reason=pytest_skip_reason)
+class TestPydanticModels:
+    """Test additional Pydantic models from app.py."""
+
+    def test_draft_request_valid(self):
+        """Test valid DraftRequest creation."""
+        sections = [
+            {
+                "section_name": "Chapter 1",
+                "section_ideas": ["Idea 1", "Idea 2"]
+            }
+        ]
+        
+        request = main_app.DraftRequest(
+            title="Test Book",
+            author="Test Author",
+            book_idea="Test idea",
+            toc=sections
+        )
+        
+        assert request.title == "Test Book"
+        assert request.author == "Test Author"
+        assert request.book_idea == "Test idea"
+        assert len(request.toc) == 1
+        assert request.toc[0].section_name == "Chapter 1"
+
+    def test_pdf_request_valid(self):
+        """Test valid PDFRequest creation."""
+        sections = [
+            {
+                "section_name": "Chapter 1",
+                "section_ideas": ["Idea 1", "Idea 2"]
+            }
+        ]
+        
+        request = main_app.PDFRequest(
+            title="Test Book",
+            author="Test Author",
+            toc=sections,
+            markdown="# Chapter 1\n\nContent here."
+        )
+        
+        assert request.title == "Test Book"
+        assert request.author == "Test Author"
+        assert len(request.toc) == 1
+        assert request.markdown == "# Chapter 1\n\nContent here."
+
+    def test_cover_request_valid(self):
+        """Test valid CoverRequest creation."""
+        request = main_app.CoverRequest(
+            title="Test Book",
+            author="Test Author",
+            book_idea="Test idea",
+            num_pages=100,
+            include_spine_title=True
+        )
+        
+        assert request.title == "Test Book"
+        assert request.author == "Test Author"
+        assert request.book_idea == "Test idea"
+        assert request.num_pages == 100
+        assert request.include_spine_title is True
+
+    def test_cover_request_invalid_pages(self):
+        """Test CoverRequest with invalid page count."""
+        with pytest.raises(ValueError):
+            main_app.CoverRequest(
+                title="Test Book",
+                author="Test Author",
+                book_idea="Test idea",
+                num_pages=0  # Should be > 0
+            )
+
+    def test_cover_request_default_spine_title(self):
+        """Test CoverRequest with default spine title setting."""
+        request = main_app.CoverRequest(
+            title="Test Book",
+            author="Test Author",
+            book_idea="Test idea",
+            num_pages=100
+        )
+        
+        assert request.include_spine_title is False
+
+
+@pytest.mark.skipif(pytest_skip_reason is not None, reason=pytest_skip_reason)
+class TestErrorHandling:
+    """Test error handling scenarios."""
+
+    @pytest.fixture
+    def client(self, mock_env_vars):
+        """Create test client with mocked environment."""
+        with patch('app.openai_client'), \
+             patch('app.replicate_client'), \
+             patch('app.pypandoc.get_pandoc_version'):
+            return TestClient(main_app.app)
+
+    def test_toc_invalid_json_response(self, client, sample_toc_request):
+        """Test TOC endpoint with invalid JSON from LLM."""
+        with patch('app.ask_llm') as mock_ask_llm:
+            mock_ask_llm.return_value = "Not valid JSON"
+            
+            response = client.post("/toc", json=sample_toc_request)
+        
+        assert response.status_code == 502
+        assert "invalid JSON" in response.json()["detail"]
+
+    def test_draft_invalid_request(self, client):
+        """Test draft endpoint with invalid request."""
+        invalid_request = {
+            "title": "Test Book"
+            # Missing required fields
+        }
+        
+        response = client.post("/draft", json=invalid_request)
+        assert response.status_code == 422
+
+    def test_pdf_invalid_request(self, client):
+        """Test PDF endpoint with invalid request."""
+        invalid_request = {
+            "title": "Test Book"
+            # Missing required fields
+        }
+        
+        response = client.post("/pdf", json=invalid_request)
+        assert response.status_code == 422
+
+    def test_cover_invalid_request(self, client):
+        """Test cover endpoint with invalid request."""
+        invalid_request = {
+            "title": "Test Book",
+            "num_pages": -1  # Invalid page count
+        }
+        
+        response = client.post("/cover", json=invalid_request)
+        assert response.status_code == 422
+
+
+@pytest.mark.skipif(pytest_skip_reason is not None, reason=pytest_skip_reason)
+class TestImageProcessing:
+    """Test image processing functions."""
+
+    def test_ensure_image_with_pil_image(self):
+        """Test _ensure_image with PIL Image."""
+        img = Image.new('RGB', (10, 10), color='red')
+        result = main_app._ensure_image(img)
+        assert isinstance(result, Image.Image)
+        assert result == img
+
+    def test_ensure_image_with_bytes(self):
+        """Test _ensure_image with bytes."""
+        img = Image.new('RGB', (10, 10), color='red')
+        buf = BytesIO()
+        img.save(buf, format='PNG')
+        img_bytes = buf.getvalue()
+        
+        result = main_app._ensure_image(img_bytes)
+        assert isinstance(result, Image.Image)
+
+    def test_create_cover_image(self):
+        """Test cover image creation."""
+        front_img = Image.new('RGB', (100, 150), color='blue')
+        back_img = Image.new('RGB', (100, 150), color='red')
+        
+        result_img, dimensions = main_app.create_cover_image(
+            front_img=front_img,
+            back_img=back_img,
+            spine_color='black',
+            num_pages=100,
+            paper_thickness=0.002252,
+            dpi=72
+        )
+        
+        assert isinstance(result_img, Image.Image)
+        assert len(dimensions) == 5  # full_w, h, back_w, spine_w, front_w
+        assert all(isinstance(d, (int, float)) for d in dimensions)

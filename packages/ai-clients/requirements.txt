@@ -1,0 +1,15 @@
+fastapi
+uvicorn
+openai
+replicate==1.0.3
+beautifulsoup4
+streamlit
+markdown
+pypandoc
+pandas
+pillow
+weasyprint
+pytest
+pytest-asyncio
+httpx
+pytest-mock

@@ -1,0 +1,3 @@
+# Summary
+
+In summary, this book has been created using the cc-template tool.

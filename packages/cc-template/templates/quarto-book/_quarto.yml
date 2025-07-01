@@ -1,0 +1,41 @@
+project:
+  type: book
+  title: "{{ title }}"
+
+book:
+  title: "{{ title }}"
+  author: "{{ author }}"
+  date: "{{ date }}"
+  search: true
+  downloads: [pdf, epub]
+  chapters:
+    - index.qmd
+    - intro.qmd
+    - summary.qmd
+    - references.qmd
+
+bibliography: references.bib
+nocite: '@*'
+
+format:
+  html:
+    theme: cosmo
+    toc: true
+    page-footer: "{{ page_footer }}"
+    site-url: "{{ site_url }}"
+  pdf:
+    papersize: "Letter"
+    mainfont: "Georgia"
+    CJKmainfont: "STSong"  # or another CJK font you have installed
+    toc: true
+    documentclass: scrbook
+    geometry: paperwidth=6in,paperheight=9in
+    standalone: true
+    toc-depth: 2  
+    keep-tex: true
+    include-in-header:
+      - text: |
+          \usepackage{xeCJK}
+          \setCJKmainfont{STSong}
+    header-includes:
+      - \raggedbottom

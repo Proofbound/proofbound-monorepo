@@ -1,0 +1,12 @@
+INFO:     Will watch for changes in these directories: ['/Users/sprague/dev/proofbound/customer-books/bookgeneratorapi']
+INFO:     Uvicorn running on http://0.0.0.0:8000 (Press CTRL+C to quit)
+INFO:     Started reloader process [56803] using StatReload
+INFO:     Started server process [56820]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     127.0.0.1:59296 - "GET /test HTTP/1.1" 200 OK
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [56820]
+INFO:     Stopping reloader process [56803]

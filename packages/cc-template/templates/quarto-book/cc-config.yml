@@ -1,0 +1,21 @@
+# CC Template Configuration
+# This file defines variables used in template processing
+
+# Basic book metadata
+title: "{{ project_name | title | replace('-', ' ') | replace('_', ' ') }}"
+author: "Author Name"
+date: "{{ current_date }}"
+
+# Website and publishing settings
+page_footer: "Copyright 2025 Your Organization"
+site_url: "https://yourusername.github.io/{{ project_name }}/"
+
+# Additional variables you can add:
+# description: "Book description"
+# version: "1.0.0"
+# publisher: "Publisher Name"
+# isbn: "978-0000000000"
+# keywords: ["keyword1", "keyword2"]
+
+# Custom variables for your templates
+# my_custom_variable: "custom value"

@@ -1,0 +1,5 @@
+# Preface {.unnumbered}
+
+This is "{{ title }}" by {{ author }}.
+
+This book was created using the CC Template CLI tool. To learn more about Quarto books visit <https://quarto.org/docs/books>.
