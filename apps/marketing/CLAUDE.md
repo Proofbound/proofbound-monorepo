@@ -4,6 +4,13 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Development Commands
 
+**Setup (First Time):**
+```bash
+cd _resources/js/
+cp config.js.example config.js
+# Edit config.js with your Stripe publishable key and price ID
+```
+
 **Local Development:**
 ```bash
 quarto preview          # Start local dev server on port 4710
@@ -51,7 +58,7 @@ This is a **Quarto-based static website** with **Netlify serverless functions** 
 **Configuration:**
 - `_quarto.yml` - Site config (theme: minty, fonts: Crimson Text, port: 4710, excludes CLAUDE.md from rendering)
 - `netlify.toml` - Deployment config, redirect rules for payment verification
-- `_resources/js/config.js` - Stripe configuration with live keys
+- `_resources/js/config.js` - Stripe configuration with live keys (NOT in git, copy from config.js.example)
 
 **Serverless Functions:**
 - `netlify/functions/verify-session.js` - Validates Stripe payment before allowing success page access

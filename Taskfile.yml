@@ -1,0 +1,111 @@
+version: '3'
+
+tasks:
+  dev:frontend:
+    desc: "Start React frontend development server"
+    dir: apps/main-app/frontend
+    cmds:
+      - npm run dev
+    
+  dev:marketing:
+    desc: "Start Quarto marketing site development server"
+    dir: apps/marketing
+    cmds:
+      - quarto preview
+      
+  dev:all:
+    desc: "Start both frontend and marketing sites simultaneously"
+    deps:
+      - dev:frontend-bg
+      - dev:marketing-bg
+    cmds:
+      - echo "✅ Both servers started!"
+      - echo "🔗 Frontend: http://localhost:5173"
+      - echo "🔗 Marketing: http://localhost:4710"
+      - echo "Press Ctrl+C to stop all servers"
+      - wait
+
+  dev:frontend-bg:
+    desc: "Start React frontend in background"
+    dir: apps/main-app/frontend
+    cmds:
+      - npm run dev &
+    internal: true
+
+  dev:marketing-bg:
+    desc: "Start Quarto marketing site in background"
+    dir: apps/marketing
+    cmds:
+      - quarto preview &
+    internal: true
+
+  install:
+    desc: "Install all dependencies"
+    cmds:
+      - task: install:frontend
+      - task: install:python
+
+  install:frontend:
+    desc: "Install frontend dependencies"
+    dir: apps/main-app/frontend
+    cmds:
+      - npm install
+
+  install:python:
+    desc: "Install Python dependencies"
+    cmds:
+      - echo "Activating virtual environment..."
+      - source venv/bin/activate && pip install -r packages/ai-clients/requirements.txt
+      - cd packages/cc-template && source ../../venv/bin/activate && uv sync
+
+  setup:python:
+    desc: "Set up Python virtual environment"
+    cmds:
+      - python3 -m venv venv
+      - source venv/bin/activate && pip install --upgrade pip
+      - echo "✅ Python virtual environment created at ./venv"
+      - echo "Run 'source venv/bin/activate' to activate it"
+
+  build:frontend:
+    desc: "Build React frontend for production"
+    dir: apps/main-app/frontend
+    cmds:
+      - npm run build
+
+  build:marketing:
+    desc: "Build Quarto marketing site for production"
+    dir: apps/marketing
+    cmds:
+      - quarto render
+
+  build:all:
+    desc: "Build both frontend and marketing sites"
+    deps:
+      - build:frontend
+      - build:marketing
+
+  lint:frontend:
+    desc: "Lint React frontend code"
+    dir: apps/main-app/frontend
+    cmds:
+      - npm run lint
+
+  test:python:
+    desc: "Run Python tests"
+    dir: packages/cc-template
+    cmds:
+      - source ../../venv/bin/activate && pytest
+
+  clean:
+    desc: "Clean build artifacts"
+    cmds:
+      - rm -rf apps/main-app/frontend/dist
+      - rm -rf apps/marketing/docs
+      - echo "✅ Build artifacts cleaned"
+
+  status:
+    desc: "Show status of all services"
+    cmds:
+      - echo "🔍 Checking service status..."
+      - echo "Frontend (React): http://localhost:5173"
+      - echo "Marketing (Quarto): http://localhost:4710"

@@ -1,6 +1,15 @@
-// Stripe Configuration Template
-// Copy this file to config.js and replace with your actual Stripe keys
-// DO NOT commit config.js to version control
+// Stripe Configuration Template for Marketing Site
+// 
+// SETUP INSTRUCTIONS:
+// 1. Copy this file to config.js in the same directory
+// 2. Replace the placeholder values with your actual Stripe keys
+// 3. The publishable key (pk_*) is safe for client-side use
+// 4. DO NOT commit config.js to version control (it's in .gitignore)
+//
+// To get your Stripe keys:
+// 1. Log into Stripe Dashboard → Developers → API keys
+// 2. Copy the "Publishable key" (starts with pk_live_ or pk_test_)
+// 3. Copy your price ID from Products → [Your Product] → Pricing
 
 const stripeConfig = {
   publishableKey: 'pk_live_YOUR_STRIPE_PUBLISHABLE_KEY_HERE', // Replace with your live publishable key

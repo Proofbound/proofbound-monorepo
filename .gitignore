@@ -13,6 +13,9 @@ Thumbs.db
 .idea/
 *.sublime-*
 
+# Marketing site sensitive config
+apps/marketing/_resources/js/config.js
+
 # Python
 __pycache__/
 *.py[cod]
