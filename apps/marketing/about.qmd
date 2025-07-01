@@ -1,0 +1,9 @@
+---
+title: "About"
+---
+
+This site is still under development.
+
+Powered by [Hal9](https://hal9.com/)
+
+![](https://hal9.com/svgs/Hal9LogoLight.svg)

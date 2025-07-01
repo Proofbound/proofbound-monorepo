@@ -1,0 +1,67 @@
+---
+title: Payment Successful
+format: html
+---
+
+<!-- Replace iframe in success.qmd -->
+<div id="book-generator">
+  <form id="book-form">
+    <input type="text" id="title" placeholder="Book Title" required>
+    <input type="text" id="author" placeholder="Author" required>
+    <textarea id="book_idea" placeholder="Book Idea" required></textarea>
+    <button type="submit" id="generate-button">
+      <span class="button-text">Generate Book</span>
+      <span class="spinner" style="display: none;"></span>
+    </button>
+  </form>
+  <div id="results"></div>
+</div>
+
+<script>
+document.getElementById('book-form').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const generateButton = document.getElementById('generate-button');
+  const buttonText = generateButton.querySelector('.button-text');
+  const spinner = generateButton.querySelector('.spinner');
+
+  const urlParams = new URLSearchParams(window.location.search);
+  const sessionId = urlParams.get('session_id');
+  
+  const formData = {
+    title: document.getElementById('title').value,
+    author: document.getElementById('author').value,
+    book_idea: document.getElementById('book_idea').value,
+    sessionId: sessionId
+  };
+  
+  try {
+    // Show spinner and disable button
+    buttonText.style.display = 'none';
+    spinner.style.display = 'inline-block';
+    generateButton.disabled = true;
+
+    const response = await fetch('/.netlify/functions/hal9-direct', {
+      method: 'POST',
+      body: JSON.stringify(formData)
+    });
+    
+    const result = await response.json();
+    const resultsDiv = document.getElementById('results');
+    resultsDiv.innerHTML = '<h3>Your book is being generated!</h3>' +
+      '<p>You will receive an email shortly with a link to your book.</p>' +
+      '<p>Here is the data we received:</p>' +
+      `<pre>${JSON.stringify(result, null, 2)}</pre>`;
+  } catch (error) {
+    console.error('Error:', error);
+    document.getElementById('results').innerHTML = 
+      '<p style="color: red;">An error occurred while generating your book. Please try again later.</p>';
+  } finally {
+    // Hide spinner and re-enable button
+    buttonText.style.display = 'inline-block';
+    spinner.style.display = 'none';
+    generateButton.disabled = false;
+  }
+});
+</script>
+
+[Return to Home](index.html)

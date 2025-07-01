@@ -1,0 +1,23 @@
+/* css styles */
+
+/* Tailwind-inspired button styles for Buy Now button */
+.button-buy {
+  background-color: #2563eb; /* bg-blue-600 */
+  color: #fff; /* text-white */
+  font-weight: 600; /* font-semibold */
+  padding: 0.5rem 1.5rem; /* py-2 px-6 */
+  border-radius: 0.5rem; /* rounded-lg */
+  transition: background 0.2s;
+  border: none;
+  cursor: pointer;
+  font-size: 1rem;
+}
+.button-buy:hover {
+  background-color: #1d4ed8; /* hover:bg-blue-700 */
+}
+.flex-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 1.5rem;
+}

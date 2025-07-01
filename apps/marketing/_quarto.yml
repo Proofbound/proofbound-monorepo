@@ -1,0 +1,31 @@
+project:
+  type: website
+  output-dir: docs
+  preview:
+    port: 4710
+  render:
+    - "*.qmd"
+    - "!CLAUDE.md"
+
+website:
+  title: "Proofbound"
+  favicon: _resources/proofbound-logo-shield.svg
+  navbar:
+    logo: _resources/proofbound-logo-shield.svg
+    left:
+      - text: Home
+        href: index.qmd
+      - about.qmd
+
+format:
+  html:
+    mainfont: "Crimson Text"
+    monofont: "Source Code Pro"
+    standalone: true
+    theme: 
+      - minty
+    css:
+      - _resources/css/custom-fonts.css # Ensure custom fonts are loaded
+      - _resources/css/normalize.css    # Then apply normalization
+      - styles.css                      # Add custom styles for button, etc.
+    toc: true

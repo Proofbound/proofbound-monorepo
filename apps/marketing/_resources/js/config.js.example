@@ -1,0 +1,8 @@
+// Stripe Configuration Template
+// Copy this file to config.js and replace with your actual Stripe keys
+// DO NOT commit config.js to version control
+
+const stripeConfig = {
+  publishableKey: 'pk_live_YOUR_STRIPE_PUBLISHABLE_KEY_HERE', // Replace with your live publishable key
+  priceId: 'price_YOUR_PRICE_ID_HERE', // Replace with your live price ID
+};
