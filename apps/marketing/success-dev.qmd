@@ -1,0 +1,60 @@
+---
+title: Payment Successful (Development)
+format: html
+---
+
+<!-- Development version of success page -->
+<div id="book-generator">
+  <form id="book-form">
+    <input type="text" id="title" placeholder="Book Title" required>
+    <input type="text" id="author" placeholder="Author" required>
+    <textarea id="book_idea" placeholder="Book Idea" required></textarea>
+    <button type="submit" id="generate-button">
+      <span class="button-text">Generate Book</span>
+      <span class="spinner" style="display: none;"></span>
+    </button>
+  </form>
+  <div id="results"></div>
+</div>
+
+<script>
+document.getElementById('book-form').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const generateButton = document.getElementById('generate-button');
+  const buttonText = generateButton.querySelector('.button-text');
+  const spinner = generateButton.querySelector('.spinner');
+
+  const formData = {
+    title: document.getElementById('title').value,
+    author: document.getElementById('author').value,
+    book_idea: document.getElementById('book_idea').value
+  };
+  
+  try {
+    // Show spinner and disable button
+    buttonText.style.display = 'none';
+    spinner.style.display = 'inline-block';
+    generateButton.disabled = true;
+
+    // Simulate book generation in development
+    await new Promise(resolve => setTimeout(resolve, 2000)); // 2 second delay
+    
+    const resultsDiv = document.getElementById('results');
+    resultsDiv.innerHTML = '<h3>Development Mode: Book Generation Simulated</h3>' +
+      '<p>In production, you would receive an email with a link to your generated book.</p>' +
+      '<p>Form data submitted:</p>' +
+      `<pre>${JSON.stringify(formData, null, 2)}</pre>`;
+  } catch (error) {
+    console.error('Error:', error);
+    document.getElementById('results').innerHTML = 
+      '<p style="color: red;">An error occurred. Please try again later.</p>';
+  } finally {
+    // Hide spinner and re-enable button
+    buttonText.style.display = 'inline-block';
+    spinner.style.display = 'none';
+    generateButton.disabled = false;
+  }
+});
+</script>
+
+[Return to Home](index.html)

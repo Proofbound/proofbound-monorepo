@@ -16,6 +16,9 @@ Thumbs.db
 # Marketing site sensitive config
 apps/marketing/_resources/js/config.js
 
+# Built Quarto sites (generated content)
+apps/marketing/docs/
+
 # Python
 __pycache__/
 *.py[cod]
@@ -60,3 +63,5 @@ lerna-debug.log*
 .yarn/build-state.yml
 .yarn/install-state.gz
 .pn
+# Local Netlify folder
+.netlify

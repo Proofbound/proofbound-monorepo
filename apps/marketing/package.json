@@ -1,0 +1,19 @@
+{
+  "name": "marketing",
+  "version": "1.0.0",
+  "description": "A Quarto-based landing page for Proofbound, an AI-powered book writing service with Stripe payment integration and serverless backend functions.",
+  "main": "index.js",
+  "directories": {
+    "doc": "docs"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "dotenv": "^17.0.1",
+    "stripe": "^18.3.0"
+  }
+}

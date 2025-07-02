@@ -1,7 +1,7 @@
 {
 	"geolocation": {
 		"data": {
-			"city": "Kirkland",
+			"city": "Seattle",
 			"country": {
 				"code": "US",
 				"name": "United States"
@@ -11,10 +11,10 @@
 				"name": "Washington"
 			},
 			"timezone": "America/Los_Angeles",
-			"latitude": 47.6784,
-			"longitude": -122.1857,
-			"postalCode": "98033"
+			"latitude": 47.4467,
+			"longitude": -122.2684,
+			"postalCode": "98188"
 		},
-		"timestamp": 1751067217953
+		"timestamp": 1751482969679
 	}
 }

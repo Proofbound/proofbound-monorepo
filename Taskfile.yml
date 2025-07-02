@@ -8,35 +8,48 @@ tasks:
       - npm run dev
     
   dev:marketing:
-    desc: "Start Quarto marketing site development server"
+    desc: "Start Quarto marketing site with Netlify functions"
     dir: apps/marketing
     cmds:
-      - quarto preview
+      - netlify dev
       
   dev:all:
     desc: "Start both frontend and marketing sites simultaneously"
-    deps:
-      - dev:frontend-bg
-      - dev:marketing-bg
     cmds:
-      - echo "✅ Both servers started!"
-      - echo "🔗 Frontend: http://localhost:5173"
-      - echo "🔗 Marketing: http://localhost:4710"
-      - echo "Press Ctrl+C to stop all servers"
-      - wait
+      - |
+        echo "🚀 Starting both servers..."
+        echo "🔗 Frontend: http://localhost:5173"
+        echo "🔗 Marketing: http://localhost:8888"
+        echo ""
+        echo "Building marketing site first..."
+        cd apps/marketing && quarto render
+        echo ""
+        echo "Press Ctrl+C to stop all servers"
+        echo ""
+        
+        # Start frontend in background
+        cd ../main-app/frontend && npm run dev &
+        FRONTEND_PID=$!
+        
+        # Start marketing in background  
+        cd apps/marketing && netlify dev &
+        MARKETING_PID=$!
+        
+        # Wait for both processes
+        wait $FRONTEND_PID $MARKETING_PID
 
   dev:frontend-bg:
     desc: "Start React frontend in background"
     dir: apps/main-app/frontend
     cmds:
-      - npm run dev &
+      - npm run dev
     internal: true
 
   dev:marketing-bg:
-    desc: "Start Quarto marketing site in background"
+    desc: "Start Quarto marketing site with Netlify functions in background"
     dir: apps/marketing
     cmds:
-      - quarto preview &
+      - netlify dev
     internal: true
 
   install:
@@ -107,5 +120,5 @@ tasks:
     desc: "Show status of all services"
     cmds:
       - echo "🔍 Checking service status..."
-      - echo "Frontend (React): http://localhost:5173"
-      - echo "Marketing (Quarto): http://localhost:4710"
+      - echo "Frontend (React){{":"}} http{{":"}}//localhost{{":"}}5173"
+      - echo "Marketing (Quarto){{":"}} http{{":"}}//localhost{{":"}}4710"

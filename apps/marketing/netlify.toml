@@ -1,6 +1,11 @@
 [build]
+  command = "quarto render"
   publish = "docs"
   functions = "netlify/functions"
+
+[dev]
+  command = "quarto preview --port 4710"
+  targetPort = 4710
 
 [[redirects]]
   from = "/success.html"
