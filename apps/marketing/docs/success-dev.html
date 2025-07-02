@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
-<title>Proofbound</title>
+<title>Payment Successful (Development) – Proofbound</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -72,7 +72,6 @@ ul.task-list li input[type="checkbox"] {
 <link rel="stylesheet" href="_resources/css/custom-fonts.css">
 <link rel="stylesheet" href="_resources/css/normalize.css">
 <link rel="stylesheet" href="styles.css">
-<link rel="stylesheet" href="_resources/css/landing.css">
 </head>
 
 <body class="nav-fixed">
@@ -96,7 +95,7 @@ ul.task-list li input[type="checkbox"] {
           <div class="collapse navbar-collapse" id="navbarCollapse">
             <ul class="navbar-nav navbar-nav-scroll me-auto">
   <li class="nav-item">
-    <a class="nav-link active" href="./index.html" aria-current="page"> 
+    <a class="nav-link" href="./index.html"> 
 <span class="menu-text">Home</span></a>
   </li>  
   <li class="nav-item">
@@ -111,261 +110,91 @@ ul.task-list li input[type="checkbox"] {
     </nav>
 </header>
 <!-- content -->
-<div id="quarto-content" class="quarto-container page-layout-custom page-navbar">
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
 <!-- sidebar -->
 <!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar zindex-bottom">
+        
+    </div>
 <!-- main -->
+<main class="content" id="quarto-document-content">
 
-
-
-
-<div id="bgAnimation" class="background-animation">
-
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Payment Successful (Development)</h1>
 </div>
-<div class="container">
-<svg class="logo" viewbox="0 0 80 80" xmlns="http://www.w3.org/2000/svg">
-<polygon points="40,5 65,22.5 65,57.5 40,75 15,57.5 15,22.5" fill="currentColor"></polygon> <path d="M22 30 L37 33 L37 50 L22 47 Z" fill="white"></path> <path d="M43 33 L58 30 L58 47 L43 50 Z" fill="white"></path> <line x1="25" y1="36" x2="34" y2="37.5" stroke="currentColor" stroke-width="1"></line> <line x1="25" y1="40" x2="32" y2="41.5" stroke="currentColor" stroke-width="1"></line> <line x1="46" y1="37.5" x2="55" y2="36" stroke="currentColor" stroke-width="1"></line> <line x1="48" y1="41.5" x2="55" y2="40" stroke="currentColor" stroke-width="1"></line>
-</svg>
-<h1 class="hero-title">
-Have you ever wanted to write a book?
-</h1>
-<p class="hero-subtitle">
-Proofbound makes it easy to write a <span class="typing-text">200-page book</span> and get your printed copy within days!
-</p>
-<p class="hero-description">
-Transform your ideas into professionally formatted books with our platform. From concept to publication, we handle the technical details so you can focus on your story.
-</p>
-<div class="pricing-options">
-<div class="pricing-card">
-<h3>
-Fully Automated
-</h3>
-<div class="price">
-$49.95
-</div>
-<p class="pricing-description">
-AI-powered book generation with PDF and cover ready in minutes
-</p>
-<ul class="pricing-features">
-<li>
-✓ AI-generated content
-</li>
-<li>
-✓ Professional formatting
-</li>
-<li>
-✓ Cover design included
-</li>
-<li>
-✓ Printed copy shipped
-</li>
-</ul>
-<button class="cta-button" id="checkout-button">
-Start Your Writing Journey
+
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<!-- Development version of success page -->
+<div id="book-generator">
+<form id="book-form">
+<input type="text" id="title" placeholder="Book Title" required=""> <input type="text" id="author" placeholder="Author" required="">
+<textarea id="book_idea" placeholder="Book Idea" required=""></textarea>
+<button type="submit" id="generate-button">
+<span class="button-text">Generate Book</span> <span class="spinner" style="display: none;"></span>
 </button>
-</div>
-<div class="pricing-card elite">
-<h3>
-Elite Edition
-</h3>
-<div class="price">
-Custom Pricing
-</div>
-<p class="pricing-description">
-Hand-crafted by human experts with draft ready in 24 hours
-</p>
-<ul class="pricing-features">
-<li>
-✓ Expert human writer
-</li>
-<li>
-✓ 24-hour draft delivery
-</li>
-<li>
-✓ Premium formatting
-</li>
-<li>
-✓ Printed copy shipped
-</li>
-</ul>
-<button class="cta-button elite-button" onclick="window.open('https://app.proofbound.com', '_blank')">
-Get Elite Service
-</button>
+</form>
+<div id="results">
+
 </div>
 </div>
-<div class="features">
-<div class="feature">
-<div class="feature-icon">
-✍️
-</div>
-<h3>
-AI-Powered Writing
-</h3>
-<p>
-Our advanced AI helps expand your ideas into full chapters while maintaining your unique voice and style.
-</p>
-</div>
-<div class="feature">
-<div class="feature-icon">
-📚
-</div>
-<h3>
-Professional Formatting
-</h3>
-<p>
-Automatically formatted for print and digital publishing with professional layouts and typography.
-</p>
-</div>
-<div class="feature">
-<div class="feature-icon">
-🚀
-</div>
-<h3>
-Instant Publishing
-</h3>
-<p>
-Ready-to-publish files for Amazon KDP, complete with ISBN registration and distribution setup.
-</p>
-</div>
-</div>
-</div>
-<script src="https://js.stripe.com/v3/"></script>
-<script src="./_resources/js/config.js"></script>
 <script>
-// Background Animation
-function createBackgroundElements() {
-    const background = document.getElementById('bgAnimation');
-    const elements = ['✒️', '📖', '📝', '📚', '📜', '✍️', '📄', '📔'];
-    const words = ['Chapter', 'Story', 'Novel', 'Author', 'Write', 'Create', 'Publish', 'Book', 'Words', 'Pages'];
+document.getElementById('book-form').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const generateButton = document.getElementById('generate-button');
+  const buttonText = generateButton.querySelector('.button-text');
+  const spinner = generateButton.querySelector('.spinner');
+
+  const formData = {
+    title: document.getElementById('title').value,
+    author: document.getElementById('author').value,
+    book_idea: document.getElementById('book_idea').value
+  };
+  
+  try {
+    // Show spinner and disable button
+    buttonText.style.display = 'none';
+    spinner.style.display = 'inline-block';
+    generateButton.disabled = true;
+
+    // Simulate book generation in development
+    await new Promise(resolve => setTimeout(resolve, 2000)); // 2 second delay
     
-    function createElement() {
-        const element = document.createElement('div');
-        element.className = 'floating-element';
-        
-        if (Math.random() < 0.7) {
-            element.textContent = elements[Math.floor(Math.random() * elements.length)];
-            element.classList.add(Math.random() < 0.5 ? 'quill' : 'book');
-        } else {
-            element.textContent = words[Math.floor(Math.random() * words.length)];
-            element.classList.add('word');
-        }
-        
-        element.style.left = Math.random() * 100 + '%';
-        element.style.animationDelay = Math.random() * 20 + 's';
-        
-        background.appendChild(element);
-        
-        setTimeout(() => {
-            if (element.parentNode) {
-                element.parentNode.removeChild(element);
-            }
-        }, 25000);
-    }
-    
-    for (let i = 0; i < 15; i++) {
-        setTimeout(createElement, i * 1000);
-    }
-    
-    setInterval(createElement, 2000);
-}
-
-// Typing Animation
-function typeWriter() {
-    const texts = ['200-page book', 'professional novel', 'bestseller', 'memoir', 'non-fiction guide'];
-    let textIndex = 0;
-    let charIndex = 0;
-    let isDeleting = false;
-    const typingElement = document.querySelector('.typing-text');
-    
-    function type() {
-        const currentText = texts[textIndex];
-        
-        if (isDeleting) {
-            typingElement.textContent = currentText.substring(0, charIndex - 1);
-            charIndex--;
-        } else {
-            typingElement.textContent = currentText.substring(0, charIndex + 1);
-            charIndex++;
-        }
-        
-        let typeSpeed = isDeleting ? 50 : 100;
-        
-        if (!isDeleting && charIndex === currentText.length) {
-            typeSpeed = 2000;
-            isDeleting = true;
-        } else if (isDeleting && charIndex === 0) {
-            isDeleting = false;
-            textIndex = (textIndex + 1) % texts.length;
-            typeSpeed = 500;
-        }
-        
-        setTimeout(type, typeSpeed);
-    }
-    
-    type();
-}
-
-// Stripe Integration
-const stripe = Stripe(stripeConfig.publishableKey);
-
-const checkoutButton = document.getElementById('checkout-button');
-checkoutButton.addEventListener('click', async () => {
-    try {
-        // Use localhost in development, production URL otherwise
-        const isDevelopment = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-        
-        if (isDevelopment) {
-            alert('Development mode: Stripe checkout would normally redirect to payment page');
-            // Simulate successful payment - go directly to success page
-            window.location.href = '/success-dev.html';
-            return;
-        }
-        
-        const baseUrl = 'https://proofbound-stripe.netlify.app';
-        const successUrl = 'https://proofbound.com/success.html';
-        const cancelUrl = 'https://proofbound.com/cancel.html';
-        
-        const response = await fetch(`${baseUrl}/.netlify/functions/create-checkout-session`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                priceId: stripeConfig.priceId,
-                successUrl: successUrl,
-                cancelUrl: cancelUrl,
-            }),
-        });
-
-        const session = await response.json();
-
-        if (session.error) {
-            console.error('Error from serverless:', session.error);
-            alert('Failed to initiate payment. Please try again.');
-            return;
-        }
-
-        const error = await stripe.redirectToCheckout({ sessionId: session.id });
-        if (error) {
-            console.error('Error redirecting to Checkout:', error);
-            alert('Failed to initiate payment. Please try again.');
-        }
-    } catch (err) {
-        console.error('Error:', err);
-        alert('An error occurred. Please try again later.');
-    }
-});
-
-// Initialize animations
-document.addEventListener('DOMContentLoaded', function() {
-    createBackgroundElements();
-    typeWriter();
+    const resultsDiv = document.getElementById('results');
+    resultsDiv.innerHTML = '<h3>Development Mode: Book Generation Simulated</h3>' +
+      '<p>In production, you would receive an email with a link to your generated book.</p>' +
+      '<p>Form data submitted:</p>' +
+      `<pre>${JSON.stringify(formData, null, 2)}</pre>`;
+  } catch (error) {
+    console.error('Error:', error);
+    document.getElementById('results').innerHTML = 
+      '<p style="color: red;">An error occurred. Please try again later.</p>';
+  } finally {
+    // Hide spinner and re-enable button
+    buttonText.style.display = 'inline-block';
+    spinner.style.display = 'none';
+    generateButton.disabled = false;
+  }
 });
 </script>
+<p><a href="index.html">Return to Home</a></p>
 
 
 
-
+</main> <!-- /main -->
 <script id="quarto-html-after-body" type="application/javascript">
 window.document.addEventListener("DOMContentLoaded", function (event) {
   const toggleBodyColorMode = (bsSheetEl) => {

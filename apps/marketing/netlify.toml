@@ -1,7 +1,7 @@
 [build]
-  command = "quarto render"
-  publish = "docs"
-  functions = "netlify/functions"
+  command = "echo 'Using pre-built files'"
+  publish = "apps/marketing/docs"
+  functions = "apps/marketing/netlify/functions"
 
 [dev]
   command = "quarto preview --port 4710"

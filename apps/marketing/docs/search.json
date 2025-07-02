@@ -7,6 +7,13 @@
     "text": "Generate Book \n\n\n\n\n\n\n\nReturn to Home"
   },
   {
+    "objectID": "about.html",
+    "href": "about.html",
+    "title": "About",
+    "section": "",
+    "text": "This site is still under development.\nPowered by Hal9"
+  },
+  {
     "objectID": "cancel.html",
     "href": "cancel.html",
     "title": "Payment Canceled",
@@ -21,10 +28,10 @@
     "text": "Your payment was not completed. Would you like to try again?\nTry Again | Return to Home"
   },
   {
-    "objectID": "about.html",
-    "href": "about.html",
-    "title": "About",
+    "objectID": "success-dev.html",
+    "href": "success-dev.html",
+    "title": "Payment Successful (Development)",
     "section": "",
-    "text": "This site is still under development.\nPowered by Hal9"
+    "text": "Generate Book \n\n\n\n\n\n\n\nReturn to Home"
   }
 ]
