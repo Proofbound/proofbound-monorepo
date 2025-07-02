@@ -16,8 +16,8 @@ Thumbs.db
 # Marketing site sensitive config
 apps/marketing/_resources/js/config.js
 
-# Built Quarto sites (generated content)
-apps/marketing/docs/
+# Built Quarto sites (generated content) - commented out to include in git for Netlify
+# apps/marketing/docs/
 
 # Python
 __pycache__/

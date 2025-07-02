@@ -3,9 +3,8 @@ version: '3'
 tasks:
   dev:frontend:
     desc: "Start React frontend development server"
-    dir: apps/main-app/frontend
     cmds:
-      - npm run dev
+      - cd apps/main-app/frontend && npm run dev
     
   dev:marketing:
     desc: "Start Quarto marketing site with Netlify functions"
@@ -22,17 +21,17 @@ tasks:
         echo "🔗 Marketing: http://localhost:8888"
         echo ""
         echo "Building marketing site first..."
-        cd apps/marketing && quarto render
+        (cd apps/marketing && quarto render)
         echo ""
         echo "Press Ctrl+C to stop all servers"
         echo ""
         
-        # Start frontend in background
-        cd ../main-app/frontend && npm run dev &
+        # Start frontend in background (from root to access .env)
+        (cd apps/main-app/frontend && npm run dev) &
         FRONTEND_PID=$!
         
         # Start marketing in background  
-        cd apps/marketing && netlify dev &
+        (cd apps/marketing && netlify dev) &
         MARKETING_PID=$!
         
         # Wait for both processes

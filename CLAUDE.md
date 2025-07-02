@@ -4,13 +4,26 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 # Proofbound Monorepo - Development Guide
 
-## Current Status: Fresh Migration
-Just migrated from separate webapp + API to unified monorepo. Ready for dual-track development.
+## Current Status: Active Development
+Monorepo migration complete. Core infrastructure operational with three active packages:
+- ✅ **Main React App**: Production-ready with Supabase auth, Stripe payments, book generation
+- ✅ **AI Clients API**: FastAPI server with HAL9/OpenAI integration, mock endpoints, demo interface  
+- ✅ **CC Template CLI**: Python tool for Quarto book generation with templates
+- 📅 **Marketing Site**: Quarto-based proofbound.com with Netlify deployment
+- 🏗️ **Elite Dashboard**: Planned internal tooling (in apps/elite-dashboard/)
 
-## Immediate Goals (Next 3-4 weeks)
-1. **Self-Service Enhancements**: Add outline editing + Lulu integration to existing React app
-2. **Elite Service Dashboard**: Internal tooling for manual book generation  
-3. **Backend Unification**: Refactor HAL9 API calls into shared ai-clients package
+## Progress Update (July 2, 2025)
+### ✅ Completed Infrastructure
+- **AI Clients Package**: Full FastAPI implementation with chapter-by-chapter generation, mock API system for cost-free development, comprehensive demo interface
+- **Frontend**: Production React app with authentication, payment processing, and book generation workflow
+- **Testing**: Mock endpoints, unit tests, demo presets for rapid development
+- **Deployment**: Marketing site live, webapp deployment ready
+
+### 🎯 Current Focus Areas
+1. **Frontend-API Integration**: Connect React app to refactored AI endpoints
+2. **Demo Route Implementation**: Add /demo to React app for lead generation
+3. **Lulu Integration**: Print-on-demand service integration
+4. **Elite Dashboard**: Internal tooling for manual book processing
 
 ## Architecture Overview
 - `apps/main-app/frontend/` - Existing React app (Supabase auth, book generation)
@@ -25,11 +38,24 @@ Just migrated from separate webapp + API to unified monorepo. Ready for dual-tra
 - Publishing: Quarto pipeline + Lulu print-on-demand
 - Database: Supabase (will redesign schema)
 
-## Development Priority
-Week 1: Lulu integration for self-service
-Week 2: Outline editing improvements  
-Week 3: Elite service dashboard
-Week 4: Payment processing + launch prep
+## Development Roadmap
+
+### Week 1-2: Frontend-API Integration
+- Connect React app to new `/generate-book-chapters` endpoint
+- Implement demo route in React app with AI Clients API
+- Replace legacy API calls with modular endpoints
+- Add outline editing capabilities to main app
+
+### Week 3: Print Integration & Elite Tools  
+- Lulu API integration for print-on-demand
+- Elite dashboard initial implementation
+- Quality control workflows
+
+### Week 4: Launch Preparation
+- Payment flow optimization
+- Performance testing and monitoring
+- Marketing site content updates
+- Production deployment testing
 
 ## Development Commands
 

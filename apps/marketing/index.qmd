@@ -56,7 +56,7 @@ Start Your Writing Journey
 <li>✓ Premium formatting</li>
 <li>✓ Printed copy shipped</li>
 </ul>
-<button class="cta-button elite-button" onclick="window.open('https://app.proofbound.com', '_blank')">
+<button class="cta-button elite-button" id="elite-button">
 Get Elite Service
 </button>
 </div>
@@ -207,6 +207,21 @@ checkoutButton.addEventListener('click', async () => {
     } catch (err) {
         console.error('Error:', err);
         alert('An error occurred. Please try again later.');
+    }
+});
+
+// Elite Button Handler
+const eliteButton = document.getElementById('elite-button');
+eliteButton.addEventListener('click', () => {
+    // Use localhost in development, production URL otherwise
+    const isDevelopment = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+    
+    if (isDevelopment) {
+        // Link to local React app
+        window.open('http://localhost:5173', '_blank');
+    } else {
+        // Link to production app
+        window.open('https://app.proofbound.com', '_blank');
     }
 });
 
