@@ -3,9 +3,6 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import { useAuth } from './hooks/useAuth';
 import Header from './components/Header';
 import Hero from './components/Hero';
-import EmailCapture from './components/EmailCapture';
-import PricingSection from './components/PricingTiers';
-import ProcessOverview from './components/ProcessOverview';
 import Footer from './components/Footer';
 import FloatingElements from './components/FloatingElements';
 import LoginPage from './components/auth/LoginPage';
@@ -23,9 +20,6 @@ function LandingPage() {
       <FloatingElements />
       <div className="content-layer pt-16">
         <Hero />
-        <EmailCapture />
-        <PricingSection />
-        <ProcessOverview />
         <Footer />
       </div>
     </div>
