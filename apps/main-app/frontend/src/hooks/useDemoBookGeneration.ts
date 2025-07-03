@@ -57,7 +57,7 @@ interface GeneratePDFResponse {
   file_size_mb: number;
 }
 
-const API_BASE_URL = 'https://api.hal9.com/books/bookgeneratorapi/proxy';
+// No API needed - just return mock data directly
 
 export function useDemoBookGeneration() {
   const [loading, setLoading] = useState(false);
@@ -68,100 +68,24 @@ export function useDemoBookGeneration() {
       setLoading(true);
       setError(null);
 
+      console.log('🚀 Generating mock chapter content...');
+      
+      // Simulate API delay
+      await new Promise(resolve => setTimeout(resolve, 1500));
+
       const chapterIndex = (request.chapter_number || 1) - 1;
       const chapterData = request.toc[chapterIndex];
       
-      // Try different payload structures based on the API error
-      const requestPayload = {
-        title: request.title,
-        author: request.author,
-        book_idea: request.book_idea,
+      const mockResponse = {
         chapter_number: request.chapter_number || 1,
-        chapter_title: chapterData?.section_name || 'Chapter Title',
-        section_ideas: chapterData?.section_ideas || [],
-        content_depth: request.content_depth || 'draft',
-        
-        // API expects chapter_outline as an object, not string
-        chapter_outline: {
-          section_name: chapterData?.section_name || 'Chapter Title',
-          section_ideas: chapterData?.section_ideas || [],
-          estimated_pages: chapterData?.estimated_pages || '10-15',
-          chapter_number: request.chapter_number || 1,
-          content_depth: request.content_depth || 'draft'
-        },
-        
-        // Alternative structures to try
-        outline: chapterData?.section_ideas || [],
-        toc: request.toc,
-        
-        // Additional fields the API might need
-        generation_mode: request.generation_mode || 'draft',
-        context: {
-          book_title: request.title,
-          book_idea: request.book_idea,
-          author: request.author,
-          total_chapters: request.toc.length
-        }
+        chapter_title: chapterData?.section_name || 'Generated Chapter',
+        content: `# ${chapterData?.section_name || 'Generated Chapter'}\n\nThis is mock chapter content generated for "${request.title}" by ${request.author}.\n\n## Overview\n\n${request.book_idea}\n\n## Key Points\n\n${chapterData?.section_ideas?.map(idea => `- ${idea}`).join('\n') || '- Mock content point 1\n- Mock content point 2\n- Mock content point 3'}\n\n## Detailed Analysis\n\nThis chapter provides comprehensive coverage of the topic with real-world examples, expert insights, and actionable recommendations. The content demonstrates the structure and quality you can expect from the actual book generation process.\n\n## Conclusion\n\nThis mock content shows how your book would be structured and formatted.`,
+        word_count: 500,
+        estimated_pages: 2
       };
-
-      console.log('🚀 Making chapter generation request to:', `${API_BASE_URL}/mock/generate-chapter`);
-      console.log('📦 Chapter request payload:', requestPayload);
       
-      const response = await fetch(`${API_BASE_URL}/mock/generate-chapter`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(requestPayload),
-      });
-
-      console.log('📡 Chapter response status:', response.status, response.statusText);
-      console.log('📡 Chapter response headers:', Object.fromEntries(response.headers.entries()));
-
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.error('❌ Chapter API error response:', errorText);
-        
-        let errorData;
-        try {
-          errorData = JSON.parse(errorText);
-          console.error('❌ Parsed chapter error:', errorData);
-        } catch {
-          errorData = { error: errorText };
-        }
-
-        const userError = `Chapter API Error (${response.status}): ${errorData.error || errorData.msg || errorData.detail || response.statusText}`;
-        throw new Error(userError);
-      }
-
-      const data = await response.json();
-      console.log('✅ Chapter API Response:', data);
-      console.log('✅ Response type:', typeof data);
-      console.log('✅ Response keys:', data ? Object.keys(data) : 'null/undefined');
-      
-      // Validate the response has expected structure
-      if (!data) {
-        console.error('❌ API returned null/undefined data');
-        throw new Error('API returned no data');
-      }
-      
-      // Check if the response has the expected fields for a chapter
-      if (typeof data === 'object') {
-        // If it's a mock response, it might have different structure
-        // Try to normalize the response
-        const normalizedResponse = {
-          chapter_number: data.chapter_number || request.chapter_number || 1,
-          chapter_title: data.chapter_title || data.title || chapterData?.section_name || 'Generated Chapter',
-          content: data.content || data.text || data.chapter_content || 'Mock chapter content generated successfully.',
-          word_count: data.word_count || data.words || (data.content?.length || 500),
-          estimated_pages: data.estimated_pages || data.pages || Math.ceil((data.content?.length || 500) / 250)
-        };
-        
-        console.log('✅ Normalized chapter response:', normalizedResponse);
-        return normalizedResponse;
-      }
-      
-      return data;
+      console.log('✅ Mock chapter generated:', mockResponse);
+      return mockResponse;
     } catch (err) {
       console.error('❌ Demo content generation error:', err);
       const errorMessage = err instanceof Error ? err.message : 'Failed to generate content';
@@ -177,30 +101,18 @@ export function useDemoBookGeneration() {
       setLoading(true);
       setError(null);
 
-      console.log('Making demo cover request to:', `${API_BASE_URL}/mock/cover`);
+      console.log('🚀 Generating mock cover...');
+      
+      // Simulate API delay
+      await new Promise(resolve => setTimeout(resolve, 2000));
 
-      const response = await fetch(`${API_BASE_URL}/mock/cover`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(request),
-      });
-
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.error('Mock API error response:', errorText);
-        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-      }
-
-      // For demo, return mock data since /mock/cover returns a PDF file
       return {
         cover_url: 'https://via.placeholder.com/400x600/6366f1/white?text=' + encodeURIComponent(request.title),
-        design_description: `Modern ${request.design_style} cover with ${request.color_scheme} color scheme`,
+        design_description: `Mock ${request.design_style || 'modern'} cover with ${request.color_scheme || 'blue'} color scheme`,
         color_palette: ['#6366f1', '#8b5cf6', '#06b6d4']
       };
     } catch (err) {
-      console.error('Demo cover generation error:', err);
+      console.error('❌ Demo cover generation error:', err);
       const errorMessage = err instanceof Error ? err.message : 'Failed to generate cover';
       setError(errorMessage);
       return null;
@@ -214,23 +126,11 @@ export function useDemoBookGeneration() {
       setLoading(true);
       setError(null);
 
-      console.log('Making demo PDF request to:', `${API_BASE_URL}/mock/pdf`);
+      console.log('🚀 Generating mock PDF...');
+      
+      // Simulate API delay
+      await new Promise(resolve => setTimeout(resolve, 2500));
 
-      const response = await fetch(`${API_BASE_URL}/mock/pdf`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(request),
-      });
-
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.error('Mock API error response:', errorText);
-        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-      }
-
-      // For demo, return mock data since /mock/pdf returns a PDF file
       const totalWords = request.chapters.reduce((sum, chapter) => sum + (chapter.content?.length || 0) / 5, 0);
       const totalPages = Math.ceil(totalWords / 300);
 
@@ -241,7 +141,7 @@ export function useDemoBookGeneration() {
         file_size_mb: 2.5
       };
     } catch (err) {
-      console.error('Demo PDF generation error:', err);
+      console.error('❌ Demo PDF generation error:', err);
       const errorMessage = err instanceof Error ? err.message : 'Failed to generate PDF';
       setError(errorMessage);
       return null;

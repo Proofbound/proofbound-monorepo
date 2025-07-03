@@ -250,3 +250,40 @@ def demo_interface():
 def get_demo_presets():
     """Return available demo presets."""
     return DEMO_PRESETS
+
+# Mock API endpoints for cost-free development
+@app.get("/mock/test")
+def mock_test_endpoint():
+    """Mock health check endpoint."""
+    return {
+        "message": "AI Book Generator API is up and running! [MOCK MODE]",
+        "architecture": "simple_toc_only",
+        "mock_mode": True,
+        "available_endpoints": ["/toc", "/demo", "/demo/presets"],
+        "mock_endpoints": ["/mock/toc", "/mock/generate-chapter", "/mock/cover", "/mock/pdf", "/mock/test"],
+        "debug_env": {
+            "API_BASE_URL": "MOCK_MODE",
+            "HAL9_TOKEN_present": "MOCK_MODE"
+        }
+    }
+
+@app.post("/mock/generate-chapter")
+def mock_generate_chapter(req: dict):
+    """Mock single chapter generation."""
+    return {
+        "chapter_number": 1,
+        "chapter_title": "Generated Chapter",
+        "content": "# Generated Chapter\n\nThis is mock chapter content generated successfully. This would be a full chapter covering the specified topic with detailed information and insights.",
+        "word_count": 500,
+        "estimated_pages": 2
+    }
+
+@app.post("/mock/cover")
+def mock_generate_cover(req: dict):
+    """Mock cover generation."""
+    return {"mock_cover": "mock_data/sample_cover.pdf", "message": "Mock cover generation - would return cover PDF bytes"}
+
+@app.post("/mock/pdf")
+def mock_generate_pdf(req: dict):
+    """Mock PDF generation."""
+    return {"mock_pdf": "mock_data/sample_book.pdf", "message": "Mock PDF generation - would return PDF bytes"}
