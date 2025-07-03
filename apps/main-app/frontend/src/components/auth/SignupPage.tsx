@@ -80,7 +80,13 @@ const SignupPage = () => {
       <div className="max-w-md w-full space-y-8">
         <div className="text-center">
           <div className="flex justify-center mb-6">
-            <ProofboundLogo className="w-16 h-16 text-blue-600" size={64} />
+            <button
+              onClick={() => navigate('/')}
+              className="focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 rounded-lg p-2 hover:bg-gray-50 transition-colors"
+              title="Back to home page"
+            >
+              <ProofboundLogo className="w-16 h-16 text-blue-600 hover:text-blue-700 transition-colors" size={64} />
+            </button>
           </div>
           <h2 className="text-3xl font-bold text-gray-900 mb-2">Create your account</h2>
           <p className="text-gray-600 font-sans">Start your book publishing journey today</p>

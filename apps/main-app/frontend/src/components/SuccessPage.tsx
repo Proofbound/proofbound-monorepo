@@ -35,7 +35,13 @@ const SuccessPage = () => {
       <div className="max-w-2xl w-full text-center">
         <div className="glass-card p-12">
           <div className="flex justify-center mb-6">
-            <ProofboundLogo className="w-20 h-20 text-green-600" size={80} />
+            <button
+              onClick={() => navigate('/')}
+              className="focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 rounded-lg p-2 hover:bg-gray-50 transition-colors"
+              title="Back to home page"
+            >
+              <ProofboundLogo className="w-20 h-20 text-green-600 hover:text-green-700 transition-colors" size={80} />
+            </button>
           </div>
           
           <CheckCircle className="w-20 h-20 text-green-600 mx-auto mb-6" />

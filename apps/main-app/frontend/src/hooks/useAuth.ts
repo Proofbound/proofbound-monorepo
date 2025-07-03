@@ -55,8 +55,22 @@ export function useAuth() {
   };
 
   const signOut = async () => {
-    const { error } = await supabase.auth.signOut();
-    return { error };
+    try {
+      const { error } = await supabase.auth.signOut();
+      // Clear user state immediately regardless of API response
+      setUser(null);
+      // Don't treat 403/401 errors as failures for signout - user is logged out either way
+      if (error && !error.message.includes('403') && !error.message.includes('401')) {
+        console.warn('Signout warning:', error);
+        return { error };
+      }
+      return { error: null };
+    } catch (err) {
+      // Force local signout even if API call fails
+      setUser(null);
+      console.warn('Signout failed, cleared local session:', err);
+      return { error: null };
+    }
   };
 
   return {

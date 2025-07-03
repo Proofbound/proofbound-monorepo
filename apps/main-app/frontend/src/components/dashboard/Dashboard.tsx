@@ -1,4 +1,5 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
 import { useSubscription } from '../../hooks/useSubscription';
 import { useStripeCheckout } from '../../hooks/useStripeCheckout';
@@ -8,6 +9,7 @@ import { BookOpen, User, CreditCard, Package, ArrowRight, CheckCircle, FileText,
 import ProofboundLogo from '../Logo';
 
 const Dashboard = () => {
+  const navigate = useNavigate();
   const { user, signOut } = useAuth();
   const { subscription, loading: subscriptionLoading } = useSubscription();
   const { createCheckoutSession, loading: checkoutLoading, error: checkoutError } = useStripeCheckout();
@@ -86,10 +88,14 @@ const Dashboard = () => {
       <header className="glass-card border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex justify-between items-center">
-            <div className="flex items-center space-x-4">
-              <ProofboundLogo className="w-10 h-10 text-blue-600" size={40} />
-              <span className="text-2xl font-bold text-gray-900">Proofbound</span>
-            </div>
+            <button
+              onClick={() => navigate('/')}
+              className="flex items-center space-x-4 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 rounded-lg p-2 hover:bg-gray-50 transition-colors"
+              title="Back to home page"
+            >
+              <ProofboundLogo className="w-10 h-10 text-blue-600 hover:text-blue-700 transition-colors" size={40} />
+              <span className="text-2xl font-bold text-gray-900 hover:text-gray-700 transition-colors">Proofbound</span>
+            </button>
             <div className="flex items-center space-x-4">
               <div className="flex items-center space-x-2 text-gray-700">
                 <User className="w-5 h-5" />
@@ -215,7 +221,7 @@ const Dashboard = () => {
                       </p>
                       {submission.book_style && (
                         <p className="text-sm text-gray-600 font-sans">
-                          <strong>Style:</strong> {submission.book_style.replace('-', ' ').replace(/\b\w/g, l => l.toUpperCase())}
+                          <strong>Style:</strong> {submission.book_style.replace('-', ' ').replace(/\b\w/g, (l: string) => l.toUpperCase())}
                         </p>
                       )}
                     </div>

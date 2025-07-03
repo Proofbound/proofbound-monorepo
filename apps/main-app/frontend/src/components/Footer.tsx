@@ -2,26 +2,21 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { Mail, HelpCircle, Sparkles } from 'lucide-react';
 import ProofboundLogo from './Logo';
+import { VERSION } from '../version';
 
 const Footer = () => {
   const scrollToForm = () => {
     document.getElementById('email-capture')?.scrollIntoView({ behavior: 'smooth' });
   };
 
-  // Get current timestamp in PST
-  const getVersionTimestamp = () => {
-    const now = new Date();
-    const pstTime = new Date(now.toLocaleString("en-US", {timeZone: "America/Los_Angeles"}));
-    return pstTime.toLocaleString('en-US', {
-      timeZone: 'America/Los_Angeles',
+  // Get build date in a readable format
+  const getBuildInfo = () => {
+    const buildDate = new Date().toLocaleDateString('en-US', {
       year: 'numeric',
-      month: '2-digit',
-      day: '2-digit',
-      hour: '2-digit',
-      minute: '2-digit',
-      second: '2-digit',
-      hour12: false
+      month: 'short',
+      day: 'numeric'
     });
+    return `v${VERSION} (${buildDate})`;
   };
 
   return (
@@ -99,7 +94,7 @@ const Footer = () => {
           {/* Version Information */}
           <div className="mt-6 pt-4 border-t border-gray-200 text-center">
             <div className="text-xs text-gray-400 font-mono">
-              Version: {getVersionTimestamp()} PST
+              {getBuildInfo()}
             </div>
           </div>
         </div>

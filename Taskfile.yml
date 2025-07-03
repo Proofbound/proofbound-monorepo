@@ -121,3 +121,21 @@ tasks:
       - echo "🔍 Checking service status..."
       - echo "Frontend (React){{":"}} http{{":"}}//localhost{{":"}}5173"
       - echo "Marketing (Quarto){{":"}} http{{":"}}//localhost{{":"}}4710"
+
+  version:patch:
+    desc: "Bump patch version (1.0.0 -> 1.0.1)"
+    dir: apps/main-app/frontend
+    cmds:
+      - npm run version:patch
+
+  version:minor:
+    desc: "Bump minor version (1.0.0 -> 1.1.0)"
+    dir: apps/main-app/frontend
+    cmds:
+      - npm run version:minor
+
+  version:major:
+    desc: "Bump major version (1.0.0 -> 2.0.0)"
+    dir: apps/main-app/frontend
+    cmds:
+      - npm run version:major

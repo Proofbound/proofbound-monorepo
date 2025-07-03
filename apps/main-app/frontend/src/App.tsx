@@ -1,6 +1,7 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { useAuth } from './hooks/useAuth';
+import Header from './components/Header';
 import Hero from './components/Hero';
 import EmailCapture from './components/EmailCapture';
 import PricingSection from './components/PricingTiers';
@@ -18,8 +19,9 @@ import ProtectedRoute from './components/auth/ProtectedRoute';
 function LandingPage() {
   return (
     <div className="min-h-screen relative">
+      <Header />
       <FloatingElements />
-      <div className="content-layer">
+      <div className="content-layer pt-16">
         <Hero />
         <EmailCapture />
         <PricingSection />

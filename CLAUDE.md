@@ -17,13 +17,23 @@ Monorepo migration complete. Core infrastructure operational with three active p
 - **AI Clients Package**: Full FastAPI implementation with chapter-by-chapter generation, mock API system for cost-free development, comprehensive demo interface
 - **Frontend**: Production React app with authentication, payment processing, and book generation workflow
 - **Testing**: Mock endpoints, unit tests, demo presets for rapid development
-- **Deployment**: Marketing site live, webapp deployment ready
+- **Deployment**: ✅ Marketing site live at proofbound.com, ✅ React app deployed to app.proofbound.com
+- **Environment Setup**: Centralized .env configuration, Vite integration with monorepo structure
+- **Development Workflow**: `task dev:all` runs both frontend and marketing simultaneously
 
 ### 🎯 Current Focus Areas
-1. **Frontend-API Integration**: Connect React app to refactored AI endpoints
+1. **Frontend-API Integration**: Connect React app to refactored AI endpoints (packages/ai-clients)
 2. **Demo Route Implementation**: Add /demo to React app for lead generation
 3. **Lulu Integration**: Print-on-demand service integration
 4. **Elite Dashboard**: Internal tooling for manual book processing
+
+### 🚀 Recent Achievements
+- **Deployment Success**: Fixed gitignore issues and deployed React app to app.proofbound.com
+- **Environment-Aware Navigation**: Marketing site Elite button and React app header logo correctly route between local and production environments
+- **Account Management**: Added comprehensive header with signin/signout, user menu, and navigation
+- **Version Management System**: Implemented semantic versioning with automated bump scripts and inconspicuous display
+- **Logo Navigation Convention**: Black logos → marketing site, Blue logos → React app home (environment-aware)
+- **Monorepo Task Integration**: Unified development commands with proper environment variable loading
 
 ## Architecture Overview
 - `apps/main-app/frontend/` - Existing React app (Supabase auth, book generation)
@@ -154,3 +164,8 @@ task setup:python    # Set up Python virtual environment
 # Build
 task build:frontend  # Production React build
 task build:marketing # Production marketing build
+
+# Version Management
+task version:patch    # Bump patch version (1.0.0 -> 1.0.1)
+task version:minor    # Bump minor version (1.0.0 -> 1.1.0) 
+task version:major    # Bump major version (1.0.0 -> 2.0.0)
