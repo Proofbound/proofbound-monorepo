@@ -1,0 +1,289 @@
+/**
+ * Quarto Project Generator
+ * Creates complete Quarto book projects from outlines and metadata
+ */
+
+import {
+  BookMetadata,
+  BookOutline,
+  Chapter,
+  GeneratedChapter,
+  generateQuartoConfig,
+  generateIndexFile,
+  generatePrefaceFile,
+  generateChapterFile,
+  generateConclusionFile,
+  generateReferencesFile,
+  generateBibliographyFile,
+  generateStylesFile,
+  generateReadmeFile,
+  generateGitignoreFile,
+  slugify
+} from '../templates/quartoConfig';
+
+export interface QuartoProject {
+  [filename: string]: string;
+}
+
+export interface ProjectGenerationOptions {
+  includePreface?: boolean;
+  includeConclusion?: boolean;
+  includeReferences?: boolean;
+  includeStyles?: boolean;
+  includeReadme?: boolean;
+  includeGitignore?: boolean;
+  generatePlaceholders?: boolean;
+}
+
+const DEFAULT_OPTIONS: ProjectGenerationOptions = {
+  includePreface: true,
+  includeConclusion: true,
+  includeReferences: true,
+  includeStyles: true,
+  includeReadme: true,
+  includeGitignore: true,
+  generatePlaceholders: true,
+};
+
+/**
+ * Generate a complete Quarto project from outline and metadata
+ */
+export function generateQuartoProject(
+  outline: BookOutline,
+  metadata: BookMetadata,
+  options: ProjectGenerationOptions = {}
+): QuartoProject {
+  const opts = { ...DEFAULT_OPTIONS, ...options };
+  const project: QuartoProject = {};
+
+  // Core configuration files
+  project['_quarto.yml'] = generateQuartoConfig(metadata);
+  project['index.qmd'] = generateIndexFile(metadata);
+
+  // Optional files
+  if (opts.includePreface) {
+    project['preface.qmd'] = generatePrefaceFile(metadata);
+  }
+
+  if (opts.includeConclusion) {
+    project['conclusion.qmd'] = generateConclusionFile(metadata);
+  }
+
+  if (opts.includeReferences) {
+    project['references.qmd'] = generateReferencesFile();
+    project['references.bib'] = generateBibliographyFile();
+  }
+
+  if (opts.includeStyles) {
+    project['styles.css'] = generateStylesFile();
+  }
+
+  if (opts.includeReadme) {
+    project['README.md'] = generateReadmeFile(metadata);
+  }
+
+  if (opts.includeGitignore) {
+    project['.gitignore'] = generateGitignoreFile();
+  }
+
+  // Generate chapter files
+  outline.chapters.forEach((chapter, index) => {
+    const chapterNum = String(index + 1).padStart(2, '0');
+    const slug = chapter.slug || slugify(chapter.title);
+    const filename = `chapters/${chapterNum}-${slug}.qmd`;
+    
+    project[filename] = generateChapterFile(chapter, index + 1, metadata.title);
+  });
+
+  // Add cover image placeholder
+  project['cover.png'] = generateCoverImagePlaceholder();
+
+  return project;
+}
+
+/**
+ * Generate project with generated chapter content
+ */
+export function generateQuartoProjectWithContent(
+  outline: BookOutline,
+  metadata: BookMetadata,
+  generatedChapters: GeneratedChapter[],
+  options: ProjectGenerationOptions = {}
+): QuartoProject {
+  // Start with basic project structure
+  const project = generateQuartoProject(outline, metadata, options);
+
+  // Replace chapter files with generated content
+  generatedChapters.forEach((generatedChapter, index) => {
+    const chapterNum = String(index + 1).padStart(2, '0');
+    const slug = generatedChapter.slug || slugify(generatedChapter.title);
+    const filename = `chapters/${chapterNum}-${slug}.qmd`;
+    
+    project[filename] = generateChapterFileWithContent(generatedChapter, index + 1, metadata.title);
+  });
+
+  return project;
+}
+
+/**
+ * Generate a chapter file with actual content
+ */
+function generateChapterFileWithContent(
+  chapter: GeneratedChapter,
+  chapterNumber: number,
+  bookTitle: string
+): string {
+  return `---
+title: "${chapter.title}"
+---
+
+${chapter.content}
+
+---
+
+*Chapter ${chapterNumber} • ${chapter.word_count} words • Generated on ${new Date(chapter.generated_at).toLocaleDateString()}*
+`;
+}
+
+/**
+ * Update a project with new chapter content
+ */
+export function updateProjectWithChapter(
+  project: QuartoProject,
+  chapter: GeneratedChapter,
+  chapterIndex: number
+): QuartoProject {
+  const chapterNum = String(chapterIndex + 1).padStart(2, '0');
+  const slug = chapter.slug || slugify(chapter.title);
+  const filename = `chapters/${chapterNum}-${slug}.qmd`;
+  
+  return {
+    ...project,
+    [filename]: generateChapterFileWithContent(chapter, chapterIndex + 1, '')
+  };
+}
+
+/**
+ * Get project statistics
+ */
+export function getProjectStats(project: QuartoProject, outline: BookOutline): ProjectStats {
+  const chapterFiles = Object.keys(project).filter(filename => filename.startsWith('chapters/'));
+  const totalFiles = Object.keys(project).length;
+  
+  // Calculate estimated word count
+  const estimatedWords = outline.chapters.reduce((total, chapter) => total + chapter.target_words, 0);
+  
+  // Count actual generated chapters
+  const generatedChapters = chapterFiles.filter(filename => {
+    const content = project[filename];
+    return !content.includes('*This chapter content will be generated by AI*');
+  });
+
+  return {
+    totalFiles,
+    chapterFiles: chapterFiles.length,
+    generatedChapters: generatedChapters.length,
+    estimatedWords,
+    completionPercentage: Math.round((generatedChapters.length / outline.chapters.length) * 100)
+  };
+}
+
+export interface ProjectStats {
+  totalFiles: number;
+  chapterFiles: number;
+  generatedChapters: number;
+  estimatedWords: number;
+  completionPercentage: number;
+}
+
+/**
+ * Validate project structure
+ */
+export function validateProject(project: QuartoProject): ProjectValidation {
+  const errors: string[] = [];
+  const warnings: string[] = [];
+
+  // Check for required files
+  if (!project['_quarto.yml']) {
+    errors.push('Missing _quarto.yml configuration file');
+  }
+
+  if (!project['index.qmd']) {
+    errors.push('Missing index.qmd file');
+  }
+
+  // Check for chapter files
+  const chapterFiles = Object.keys(project).filter(filename => filename.startsWith('chapters/'));
+  if (chapterFiles.length === 0) {
+    warnings.push('No chapter files found');
+  }
+
+  // Validate _quarto.yml syntax
+  if (project['_quarto.yml']) {
+    try {
+      // Basic YAML validation - check for common issues
+      const config = project['_quarto.yml'];
+      if (!config.includes('project:') || !config.includes('type: book')) {
+        warnings.push('_quarto.yml may not be properly configured for book type');
+      }
+    } catch {
+      errors.push('_quarto.yml contains invalid YAML syntax');
+    }
+  }
+
+  return {
+    isValid: errors.length === 0,
+    errors,
+    warnings
+  };
+}
+
+export interface ProjectValidation {
+  isValid: boolean;
+  errors: string[];
+  warnings: string[];
+}
+
+/**
+ * Generate a placeholder for cover image
+ */
+function generateCoverImagePlaceholder(): string {
+  // This would be a base64 encoded placeholder image in a real implementation
+  // For now, return a comment indicating where the cover image should go
+  return `# Cover Image Placeholder
+# Replace this file with your actual cover image (cover.png)
+# Recommended size: 1600x2400 pixels for best quality
+# Supported formats: PNG, JPG
+`;
+}
+
+/**
+ * Create a downloadable filename for the project
+ */
+export function createProjectFilename(metadata: BookMetadata): string {
+  const title = slugify(metadata.title);
+  const timestamp = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
+  return `${title}-quarto-project-${timestamp}.zip`;
+}
+
+/**
+ * Get file size estimate for the project
+ */
+export function estimateProjectSize(project: QuartoProject): number {
+  return Object.values(project).reduce((total, content) => {
+    return total + new Blob([content]).size;
+  }, 0);
+}
+
+/**
+ * Format file size for display
+ */
+export function formatFileSize(bytes: number): string {
+  if (bytes === 0) return '0 Bytes';
+  
+  const k = 1024;
+  const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+  const i = Math.floor(Math.log(bytes) / Math.log(k));
+  
+  return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+}

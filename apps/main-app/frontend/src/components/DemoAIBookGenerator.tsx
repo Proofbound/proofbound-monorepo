@@ -2,7 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowLeft, BookOpen, Wand2, Download, Eye, Sparkles, CheckCircle, AlertCircle, RefreshCw, FileText, Upload, Save, Bold, Italic, List, ListOrdered, Hash, Lightbulb, Megaphone, Plus, ArrowUp, ArrowDown, Trash2, RotateCcw, Package, Loader2 } from 'lucide-react';
 import ProofboundLogo from './Logo';
-import { useDemoBookGeneration } from '../hooks/useDemoBookGeneration';
+import { bookService } from '../services/bookService';
+import { BookGenerationRequest, BookOutline, BookMetadata, GeneratedChapter } from '../types/book';
 
 interface BookRequest {
   title: string;
@@ -95,9 +96,10 @@ const DemoAIBookGenerator = () => {
 
   const [generatedContent, setGeneratedContent] = useState<GeneratedContent | null>(null);
   const [tocData, setTocData] = useState<TOCResponse | null>(null);
+  const [outline, setOutline] = useState<BookOutline | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
-  const { generateContent, generateCover, generatePDF, loading: apiLoading, error: apiError } = useDemoBookGeneration();
+  const [apiLoading, setApiLoading] = useState(false);
 
   const totalSteps = 5;
   const stepTitles = ['Idea', 'Structure', 'Content', 'Export', 'Cover'];
@@ -149,6 +151,7 @@ const DemoAIBookGenerator = () => {
     }
 
     setIsGenerating(true);
+    setApiLoading(true);
     setError(null);
     
     setGenerationSteps(prev => prev.map(step => 
@@ -156,119 +159,34 @@ const DemoAIBookGenerator = () => {
     ));
 
     try {
-      const requestPayload = {
+      console.log('🚀 Generating real outline with HAL9 API for:', bookRequest.title);
+      
+      // Use real HAL9 API through book service
+      const bookGenerationRequest: BookGenerationRequest = {
         title: bookRequest.title,
         author: bookRequest.author,
-        book_idea: bookRequest.book_idea,
-        num_pages: bookRequest.num_pages,
-        include_spine_title: bookRequest.include_spine_title,
-        style: tocSettings.bookStyle,
-        chapter_count: tocSettings.chapterCount,
-        target_length: tocSettings.bookLength
+        bookIdea: bookRequest.book_idea,
+        topic: bookRequest.book_idea,
+        writingStyle: 'clear and engaging',
+        targetAudience: 'general readers',
+        estimatedLength: bookRequest.num_pages * 250 // Convert pages to words
       };
 
-      console.log('🚀 Making TOC API request to:', 'https://api.hal9.com/books/bookgeneratorapi/proxy/mock/toc');
-      console.log('📦 Request payload:', requestPayload);
+      const generatedOutline = await bookService.generateOutline(bookGenerationRequest);
+      console.log('✅ Real outline generated:', generatedOutline);
 
-      const response = await fetch('https://api.hal9.com/books/bookgeneratorapi/proxy/mock/toc', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(requestPayload),
-      });
+      // Transform BookOutline to TOCResponse format for compatibility
+      const tocResponse: TOCResponse = {
+        toc: generatedOutline.chapters.map(chapter => ({
+          section_name: chapter.title,
+          section_ideas: chapter.key_points,
+          estimated_pages: Math.ceil(chapter.target_words / 250).toString()
+        })),
+        total_estimated_pages: Math.ceil(generatedOutline.book.target_length / 250).toString(),
+        book_summary: generatedOutline.book.description
+      };
 
-      console.log('📡 Response status:', response.status, response.statusText);
-      console.log('📡 Response headers:', Object.fromEntries(response.headers.entries()));
-
-      if (!response.ok) {
-        let errorData;
-        const responseText = await response.text();
-        console.error('❌ Error response text:', responseText);
-        
-        try {
-          errorData = JSON.parse(responseText);
-        } catch {
-          errorData = { error: responseText || 'Unknown error' };
-        }
-        
-        console.error('❌ Parsed error data:', errorData);
-        
-        // Show user-friendly error with API details
-        const userError = `API Error (${response.status}): ${errorData.error || errorData.msg || response.statusText}`;
-        throw new Error(userError);
-      }
-
-      const data = await response.json();
-      console.log('Demo TOC API Response:', data);
-      console.log('Response keys:', Object.keys(data));
-      console.log('Response type:', typeof data);
-
-      // Handle different response formats from mock API
-      let tocResponse: TOCResponse;
-      if (data.toc && Array.isArray(data.toc)) {
-        // If response already has the expected format, but check if sections have the right structure
-        console.log('Sample section from API:', data.toc[0]);
-        tocResponse = {
-          toc: data.toc.map((section: any) => ({
-            section_name: section.section_name || section.title || section.name || 'Untitled Section',
-            section_ideas: section.section_ideas || section.ideas || section.topics || ['Content coming soon'],
-            estimated_pages: section.estimated_pages || section.pages || section.page_count || '10-15'
-          })),
-          total_estimated_pages: data.total_estimated_pages || "90-110",
-          book_summary: data.book_summary || `A comprehensive guide covering all aspects of ${bookRequest.title.toLowerCase()}.`
-        };
-      } else if (Array.isArray(data)) {
-        // If response is just an array of sections
-        console.log('Sample section from array:', data[0]);
-        tocResponse = {
-          toc: data.map((section: any) => ({
-            section_name: section.section_name || section.title || section.name || 'Untitled Section',
-            section_ideas: section.section_ideas || section.ideas || section.topics || ['Content coming soon'],
-            estimated_pages: section.estimated_pages || section.pages || section.page_count || '10-15'
-          })),
-          total_estimated_pages: "90-110",
-          book_summary: `A comprehensive guide covering all aspects of ${bookRequest.title.toLowerCase()}.`
-        };
-      } else {
-        // Fallback: create mock structure
-        console.warn('Unexpected API response format, using fallback data');
-        tocResponse = {
-          toc: [
-            {
-              section_name: "Introduction to " + bookRequest.title.split(' ').slice(-2).join(' '),
-              section_ideas: ["Overview of the topic", "Why this matters now", "What you'll learn from this book"],
-              estimated_pages: "12-15"
-            },
-            {
-              section_name: "Getting Started",
-              section_ideas: ["Essential foundations", "Setting up for success", "Common mistakes to avoid"],
-              estimated_pages: "18-22"
-            },
-            {
-              section_name: "Advanced Techniques", 
-              section_ideas: ["Professional strategies", "Best practices", "Case studies and examples"],
-              estimated_pages: "25-30"
-            },
-            {
-              section_name: "Implementation Guide",
-              section_ideas: ["Step-by-step process", "Tools and resources", "Troubleshooting common issues"],
-              estimated_pages: "20-25"
-            },
-            {
-              section_name: "Future Considerations",
-              section_ideas: ["Emerging trends", "Long-term planning", "Next steps and recommendations"],
-              estimated_pages: "15-18"
-            }
-          ],
-          total_estimated_pages: "90-110",
-          book_summary: `A comprehensive guide covering all aspects of ${bookRequest.title.toLowerCase()}.`
-        };
-      }
-
-      console.log('Processed TOC Response:', tocResponse);
-      console.log('TOC array length:', tocResponse.toc?.length);
-
+      setOutline(generatedOutline);
       setTocData(tocResponse);
       
       setGenerationSteps(prev => prev.map(step => 
@@ -279,9 +197,9 @@ const DemoAIBookGenerator = () => {
         toc: tocResponse.toc,
         chapters: {},
         stats: {
-          totalPages: parseInt(tocResponse.total_estimated_pages) || 100,
-          wordCount: (parseInt(tocResponse.total_estimated_pages) || 100) * 300,
-          readingTime: `${Math.ceil((parseInt(tocResponse.total_estimated_pages) || 100) / 2)} minutes`
+          totalPages: Math.ceil(generatedOutline.book.target_length / 250),
+          wordCount: generatedOutline.book.target_length,
+          readingTime: `${Math.ceil(generatedOutline.book.target_length / 200)} minutes`
         }
       };
 
@@ -292,7 +210,7 @@ const DemoAIBookGenerator = () => {
       nextStep();
       console.log('nextStep() called');
     } catch (err) {
-      console.error('Demo TOC Generation error:', err);
+      console.error('HAL9 TOC Generation error:', err);
       setError(err instanceof Error ? err.message : 'Failed to generate table of contents');
       
       setGenerationSteps(prev => prev.map(step => 
@@ -300,92 +218,110 @@ const DemoAIBookGenerator = () => {
       ));
     } finally {
       setIsGenerating(false);
+      setApiLoading(false);
     }
   };
 
   const generateChapterContent = async (chapterNumber: number) => {
-    if (!tocData || !generatedContent) {
-      console.error('❌ Cannot generate chapter: missing tocData or generatedContent');
+    if (!outline || !tocData || !generatedContent) {
+      console.error('❌ Cannot generate chapter: missing outline, tocData or generatedContent');
       setError('Cannot generate chapter: Table of contents not loaded');
       return;
     }
 
     // Validate chapter number
-    if (chapterNumber < 1 || chapterNumber > tocData.toc.length) {
-      console.error(`❌ Invalid chapter number: ${chapterNumber}. TOC has ${tocData.toc.length} chapters.`);
-      setError(`Invalid chapter number: ${chapterNumber}. This book only has ${tocData.toc.length} chapters.`);
+    if (chapterNumber < 1 || chapterNumber > outline.chapters.length) {
+      console.error(`❌ Invalid chapter number: ${chapterNumber}. Book has ${outline.chapters.length} chapters.`);
+      setError(`Invalid chapter number: ${chapterNumber}. This book only has ${outline.chapters.length} chapters.`);
       return;
     }
 
-    console.log(`🚀 Starting chapter ${chapterNumber} generation`);
-    console.log(`📚 Available chapters: 1-${tocData.toc.length}`);
+    console.log(`🚀 Starting chapter ${chapterNumber} generation with HAL9 API`);
+    console.log(`📚 Available chapters: 1-${outline.chapters.length}`);
     setGeneratingChapters(prev => new Set(prev).add(chapterNumber));
+    setApiLoading(true);
 
     try {
-      const chapterData = tocData.toc[chapterNumber - 1];
-      if (!chapterData) {
+      const chapter = outline.chapters[chapterNumber - 1];
+      if (!chapter) {
         throw new Error(`Chapter data not found for chapter ${chapterNumber} (index ${chapterNumber - 1})`);
       }
 
-      console.log(`📝 Generating chapter ${chapterNumber}:`, chapterData.section_name);
-      console.log(`📋 Chapter data:`, chapterData);
+      console.log(`📝 Generating chapter ${chapterNumber}:`, chapter.title);
+      console.log(`📋 Chapter data:`, chapter);
 
-      const result = await generateContent({
+      // Create metadata for the book
+      const metadata: BookMetadata = {
         title: bookRequest.title,
         author: bookRequest.author,
-        book_idea: bookRequest.book_idea,
-        toc: tocData.toc,
-        chapter_number: chapterNumber,
-        content_depth: contentSettings.contentDepth,
-        generation_mode: contentSettings.generationMode
-      });
+        topic: bookRequest.book_idea,
+        outline: outline
+      };
+
+      // Use real HAL9 API through book service
+      const result = await bookService.generateChapter({
+        chapterNumber: chapterNumber,
+        chapterTitle: chapter.title,
+        chapterSummary: chapter.description,
+        keyPoints: chapter.key_points,
+        bookTitle: bookRequest.title,
+        author: bookRequest.author,
+        bookTheme: bookRequest.book_idea,
+        targetAudience: 'general readers',
+        writingStyle: chapter.prompt_context.tone,
+        targetWords: chapter.target_words
+      }, outline);
 
       if (result) {
-        console.log(`✅ Chapter ${chapterNumber} generated successfully:`, result);
+        console.log(`✅ Chapter ${chapterNumber} generated successfully with HAL9:`, result);
         setGeneratedContent(prev => {
           if (!prev) return prev;
           return {
             ...prev,
             chapters: {
               ...prev.chapters,
-              [chapterNumber]: result
+              [chapterNumber]: {
+                chapter_number: result.chapterNumber,
+                chapter_title: result.title,
+                content: result.content,
+                word_count: result.word_count,
+                estimated_pages: Math.ceil(result.word_count / 250)
+              }
             }
           };
         });
       } else {
-        console.warn(`⚠️ Chapter ${chapterNumber} generation returned null/undefined`);
-        
-        // Provide a fallback mock response so the demo keeps working
-        console.log('🔄 Using fallback mock content for demo purposes');
-        const fallbackResult = {
-          chapter_number: chapterNumber,
-          chapter_title: chapterData.section_name,
-          content: `# ${chapterData.section_name}\n\n${chapterData.section_ideas.map(idea => `## ${idea}\n\nThis section would cover ${idea.toLowerCase()} in detail. In a real implementation, this content would be generated by our AI system based on your specific requirements and the overall book context.\n\n`).join('')}\n\n*Note: This is demo content. The full version generates comprehensive, personalized content using advanced AI.*`,
-          word_count: 300 + chapterNumber * 50,
-          estimated_pages: Math.ceil((300 + chapterNumber * 50) / 250)
-        };
-        
-        setGeneratedContent(prev => {
-          if (!prev) return prev;
-          return {
-            ...prev,
-            chapters: {
-              ...prev.chapters,
-              [chapterNumber]: fallbackResult
-            }
-          };
-        });
-        
-        setError(`API returned no content for Chapter ${chapterNumber}. Using demo content instead. Check console for API details.`);
+        throw new Error('HAL9 API returned no content');
       }
     } catch (err) {
-      console.error(`❌ Chapter ${chapterNumber} generation error:`, err);
+      console.error(`❌ Chapter ${chapterNumber} HAL9 generation error:`, err);
+      
+      // Provide a fallback for demo purposes
+      const chapterData = tocData.toc[chapterNumber - 1];
+      const fallbackResult = {
+        chapter_number: chapterNumber,
+        chapter_title: chapterData.section_name,
+        content: `# ${chapterData.section_name}\n\n${chapterData.section_ideas.map(idea => `## ${idea}\n\nThis section would cover ${idea.toLowerCase()} in detail. The HAL9 API would normally generate comprehensive, engaging content here.\n\n`).join('')}\n\n*Note: This is fallback content due to API error. The full version generates comprehensive, personalized content using HAL9 AI.*`,
+        word_count: 300 + chapterNumber * 50,
+        estimated_pages: Math.ceil((300 + chapterNumber * 50) / 250)
+      };
+      
+      setGeneratedContent(prev => {
+        if (!prev) return prev;
+        return {
+          ...prev,
+          chapters: {
+            ...prev.chapters,
+            [chapterNumber]: fallbackResult
+          }
+        };
+      });
       
       // Show detailed error information
       if (err instanceof Error) {
-        setError(`Chapter ${chapterNumber} failed: ${err.message}`);
+        setError(`Chapter ${chapterNumber} HAL9 API failed: ${err.message}. Using fallback content.`);
       } else {
-        setError(`Chapter ${chapterNumber} failed with unknown error: ${JSON.stringify(err)}`);
+        setError(`Chapter ${chapterNumber} failed with unknown error. Using fallback content.`);
       }
     } finally {
       setGeneratingChapters(prev => {
@@ -393,6 +329,7 @@ const DemoAIBookGenerator = () => {
         newSet.delete(chapterNumber);
         return newSet;
       });
+      setApiLoading(false);
     }
   };
 
@@ -479,6 +416,66 @@ const DemoAIBookGenerator = () => {
 
   const regenerateTOC = async () => {
     await generateTOC();
+  };
+
+  const downloadQuartoProject = async () => {
+    if (!outline || !generatedContent) {
+      setError('Cannot download project: missing outline or content');
+      return;
+    }
+
+    try {
+      setApiLoading(true);
+      console.log('📦 Creating Quarto project download...');
+
+      // Create metadata
+      const metadata: BookMetadata = {
+        title: bookRequest.title,
+        author: bookRequest.author,
+        topic: bookRequest.book_idea,
+        outline: outline,
+        description: outline.book.description,
+        publishingDate: new Date().toISOString().split('T')[0]
+      };
+
+      // Convert generated chapters to the format expected by the service
+      const generatedChapters: GeneratedChapter[] = Object.values(generatedContent.chapters).map(chapter => ({
+        id: `chapter-${String(chapter.chapter_number).padStart(2, '0')}`,
+        title: chapter.chapter_title,
+        description: `Chapter ${chapter.chapter_number} content`,
+        target_words: chapter.word_count,
+        status: 'generated' as const,
+        key_points: [],
+        prompt_context: {
+          focus: 'Generated content',
+          tone: 'clear and engaging'
+        },
+        content: chapter.content,
+        word_count: chapter.word_count,
+        generated_at: new Date().toISOString(),
+        slug: chapter.chapter_title.toLowerCase().replace(/[^\w\s-]/g, '').replace(/[\s_-]+/g, '-')
+      }));
+
+      // Create ZIP file
+      const zipBlob = await bookService.createQuartoProject(outline, metadata, generatedChapters);
+      
+      // Download the file
+      const url = URL.createObjectURL(zipBlob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = bookService.createDownloadFilename(metadata);
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+
+      console.log('✅ Quarto project downloaded successfully');
+    } catch (err) {
+      console.error('❌ Quarto project download error:', err);
+      setError(err instanceof Error ? err.message : 'Failed to create Quarto project download');
+    } finally {
+      setApiLoading(false);
+    }
   };
 
   const calculateTotalPages = () => {
@@ -590,17 +587,17 @@ const DemoAIBookGenerator = () => {
       </div>
 
       <div className="glass-card p-8">
-        {(error || apiError) && (
+        {error && (
           <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
             <div className="flex items-center mb-2">
               <AlertCircle className="w-5 h-5 text-red-600 mr-3" />
-              <span className="text-red-700 font-sans font-semibold">API Error</span>
+              <span className="text-red-700 font-sans font-semibold">HAL9 API Error</span>
             </div>
             <div className="text-red-700 font-sans text-sm">
-              {error || apiError}
+              {error}
             </div>
             <div className="mt-2 text-red-600 text-xs">
-              💡 Check browser console for detailed API debugging information
+              💡 Check browser console for detailed HAL9 API debugging information
             </div>
           </div>
         )}
@@ -1162,17 +1159,17 @@ const DemoAIBookGenerator = () => {
       </div>
 
       <div className="glass-card p-8">
-        {(error || apiError) && (
+        {error && (
           <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
             <div className="flex items-center mb-2">
               <AlertCircle className="w-5 h-5 text-red-600 mr-3" />
-              <span className="text-red-700 font-sans font-semibold">API Error</span>
+              <span className="text-red-700 font-sans font-semibold">HAL9 API Error</span>
             </div>
             <div className="text-red-700 font-sans text-sm">
-              {error || apiError}
+              {error}
             </div>
             <div className="mt-2 text-red-600 text-xs">
-              💡 Check browser console for detailed API debugging information
+              💡 Check browser console for detailed HAL9 API debugging information
             </div>
           </div>
         )}
@@ -1210,14 +1207,16 @@ const DemoAIBookGenerator = () => {
           <div className="flex flex-wrap gap-4">
             <button 
               className="button-secondary flex items-center space-x-2"
-              onClick={() => alert('Downloading Markdown...')}
+              onClick={downloadQuartoProject}
+              disabled={!outline || !generatedContent}
             >
-              <FileText className="w-4 h-4" />
-              <span>Download Markdown</span>
+              <Package className="w-4 h-4" />
+              <span>Download Quarto Project</span>
             </button>
             <button 
               className="button-secondary flex items-center space-x-2"
               onClick={() => alert('Downloading HTML...')}
+              disabled={!generatedContent}
             >
               <Download className="w-4 h-4" />
               <span>Download HTML</span>
@@ -1225,6 +1224,7 @@ const DemoAIBookGenerator = () => {
             <button 
               className="button-secondary flex items-center space-x-2"
               onClick={() => alert('Downloading EPUB...')}
+              disabled={!generatedContent}
             >
               <BookOpen className="w-4 h-4" />
               <span>Download EPUB</span>
@@ -1294,10 +1294,10 @@ const DemoAIBookGenerator = () => {
         </div>
 
         <div className="glass-card p-6">
-          {(error || apiError) && (
+          {error && (
             <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg flex items-center">
               <AlertCircle className="w-5 h-5 text-red-600 mr-3" />
-              <span className="text-red-700 font-sans">{error || apiError}</span>
+              <span className="text-red-700 font-sans">{error}</span>
             </div>
           )}
 
@@ -1369,13 +1369,14 @@ const DemoAIBookGenerator = () => {
             <div className="pt-6 border-t border-gray-200">
               <button 
                 className="cta-button w-full flex items-center justify-center space-x-2"
-                onClick={() => alert('Downloading complete package...')}
+                onClick={downloadQuartoProject}
+                disabled={!outline || !generatedContent || apiLoading}
               >
-                <Package className="w-4 h-4" />
-                <span>Download Complete Package</span>
+                {apiLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Package className="w-4 h-4" />}
+                <span>{apiLoading ? 'Creating Package...' : 'Download Complete Quarto Project'}</span>
               </button>
               <p className="mt-2 text-sm text-gray-500 text-center font-sans">
-                Includes book content, cover, and all export formats
+                Includes book content, Quarto configuration, and source files for publishing
               </p>
             </div>
           </div>

@@ -32,8 +32,8 @@ This monorepo contains two main applications and supporting packages:
 - **`apps/main-app/frontend/`** - React web application (app.proofbound.com) with Supabase auth
 
 ### Packages
-- **`packages/ai-clients/`** - FastAPI server for AI service integrations (HAL9, OpenAI, Anthropic)
-- **`packages/cc-template/`** - CLI tool for Quarto book generation with templates
+- **`packages/cc-template/`** - Complete CLI tool for AI-powered Quarto book generation
+- **`packages/ai-clients/`** - ⚠️ FastAPI server (being phased out for cc-template integration)
 
 ## Development Commands
 
@@ -85,11 +85,11 @@ task clean           # Clean build artifacts
 - Custom animations and responsive design
 
 ### Backend Stack
-- **FastAPI** for API services
+- **HAL9 API** for cost-effective AI book generation
+- **Supabase Edge Functions** for serverless AI API calls
 - **Python 3.10** with modern tooling (uv, pytest)
-- **AI Integration**: HAL9, OpenAI, Anthropic, Replicate
-- **PDF Generation**: WeasyPrint
-- **Book Templates**: Quarto publishing pipeline
+- **Publishing Pipeline**: Quarto → PDF/HTML/EPUB
+- **JSZip** for client-side project packaging and downloads
 
 ## Project Structure
 
@@ -99,8 +99,8 @@ proofbound-monorepo/
 │   ├── main-app/frontend/      # React application
 │   └── marketing/              # Quarto marketing site
 ├── packages/
-│   ├── ai-clients/            # FastAPI AI service
-│   ├── cc-template/           # Book generation CLI
+│   ├── cc-template/           # Complete AI-powered book generation CLI
+│   ├── ai-clients/            # (being phased out)
 │   ├── book-engine/           # (planned)
 │   └── shared-types/          # (planned)
 ├── tools/                     # Internal tooling (planned)
@@ -111,9 +111,10 @@ proofbound-monorepo/
 
 ## User Flow
 
-1. **Marketing Site** (proofbound.com) - Landing page with dual pricing
-2. **Automated Service** ($49.95) - Stripe checkout → AI book generation
-3. **Elite Service** (Custom) - Direct link to React app for human-crafted books
+1. **Marketing Site** (proofbound.com) - Simplified landing page with demo button
+2. **Demo Route** (/demo) - Live AI book generation with HAL9 API integration
+3. **Full Service** - React app with Supabase auth → HAL9 API book generation
+4. **Elite Service** - Manual book processing with internal tools
 
 ## Environment Setup
 
@@ -125,8 +126,10 @@ proofbound-monorepo/
 ### Environment Variables
 Create `.env` files for:
 - Supabase configuration (auth, database)
-- AI service API keys (HAL9, OpenAI, Anthropic)
+- HAL9 API token for AI book generation
 - Stripe configuration (payment processing)
+
+**Note**: Demo route uses HAL9 API with graceful fallbacks when unavailable.
 
 **Marketing Site Stripe Setup:**
 The marketing site requires a separate Stripe configuration file:
@@ -157,20 +160,21 @@ task dev:all
 ## Development Status
 
 ### ✅ Production Ready
-- **Marketing site** deployed to proofbound.com with Stripe integration
-- **React frontend** deployed to app.proofbound.com with Supabase auth and account management
-- **AI clients** with multiple service integrations (HAL9, OpenAI, Anthropic)
-- **Book generation CLI** with Quarto templates
+- **Marketing site** deployed to proofbound.com with simplified landing page
+- **React frontend** deployed to app.proofbound.com with Supabase auth and account management  
+- **HAL9 API Integration** complete with real AI book generation via Supabase Edge Functions
+- **Demo route** with live AI-powered book generation (HAL9 API + graceful fallbacks)
+- **Quarto Project Export** complete downloadable projects with generated content
 - **Environment-aware navigation** between local and production deployments
 - **Version management system** with semantic versioning and automated deployment tracking
 - **Logo navigation convention** for intuitive user flow between marketing and app
-- **Unified development workflow** with centralized environment variables
 
 ### 🔄 In Development  
-- Frontend-API integration with new chapter-by-chapter endpoints
-- Demo route implementation for lead generation
-- Elite service dashboard for manual book processing
-- Lulu print-on-demand integration
+- **Performance optimization**: Monitor HAL9 API costs and response times
+- **User experience refinement**: Enhanced demo flow and error handling
+- **Database integration**: Save/load book projects for authenticated users
+- **Elite service dashboard** for manual book processing
+- **Lulu print-on-demand integration**
 
 ### 📋 Planned
 - Bulk generation tools
@@ -180,25 +184,25 @@ task dev:all
 
 ## Recent Updates
 
-### Recent Updates (July 2025)
+### HAL9 API Integration Complete (July 4, 2025)
 
-#### Account Management & Navigation
-- **Header component**: Added comprehensive account management with signin/signout, user menu, and navigation between dashboard and book generator
-- **Logo navigation convention**: Implemented intuitive logo behavior (black logos → marketing site, blue logos → React app home)
-- **Environment-aware routing**: All navigation intelligently switches between localhost and production URLs
-- **Mobile responsive**: Account management works seamlessly across desktop and mobile devices
+#### Live AI Book Generation
+- **HAL9 API Integration**: Complete book generation pipeline using existing Supabase Edge Functions
+- **Real AI Demo**: Replaced mock data with actual AI-generated content from HAL9 API
+- **Graceful Fallbacks**: Demo works reliably with both API success and failure scenarios
+- **Type Safety**: Comprehensive TypeScript types for all HAL9 API interactions
 
-#### Version Management System
-- **Semantic versioning**: Implemented proper version tracking with `src/version.ts` and automated bump scripts
-- **Version display**: Inconspicuous version display at bottom of main page (e.g., "v1.0.0 (Dec 7, 2024)")
-- **Deployment workflow**: Simple commands for version bumping before deployment (`task version:patch/minor/major`)
-- **Automated tracking**: Version and build date automatically updated with each deployment
+#### Quarto Project Export
+- **Complete Project Generation**: Full Quarto book projects with chapters, config, and templates
+- **ZIP Download**: Client-side project packaging using JSZip
+- **Content Cleaning**: Automatic removal of duplicate H1 titles for proper Quarto format
+- **File Structure**: Proper chapter organization with slugified filenames and metadata
 
-#### Infrastructure Improvements
-- **Fixed deployment issues**: Resolved gitignore conflicts preventing deployment of frontend source files
-- **Environment variable centralization**: All apps now use root `.env` file with proper Vite integration  
-- **Task integration**: `task dev:all` successfully runs both sites with proper environment loading
-- **Supabase auth fixes**: Improved signout handling and error management
+#### Production-Ready Integration
+- **Existing Edge Functions**: Leveraged deployed `generate-toc` and `generate-content` functions
+- **Cost-Effective**: HAL9 API provides affordable AI generation compared to direct OpenAI/Anthropic
+- **No Backend Required**: Pure frontend integration with Supabase Edge Functions
+- **Immediate Deployment**: Ready for production without additional infrastructure
 
 ## Contributing
 

@@ -4,68 +4,76 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 # Proofbound Monorepo - Development Guide
 
-## Current Status: Active Development
-Monorepo migration complete. Core infrastructure operational with three active packages:
-- ✅ **Main React App**: Production-ready with Supabase auth, Stripe payments, book generation
-- ✅ **AI Clients API**: FastAPI server with HAL9/OpenAI integration, mock endpoints, demo interface  
-- ✅ **CC Template CLI**: Python tool for Quarto book generation with templates
-- 📅 **Marketing Site**: Quarto-based proofbound.com with Netlify deployment
-- 🏗️ **Elite Dashboard**: Planned internal tooling (in apps/elite-dashboard/)
+## Current Status: HAL9 API Integration Complete (July 4, 2025)
 
-## Progress Update (July 2, 2025)
 ### ✅ Completed Infrastructure
-- **AI Clients Package**: Full FastAPI implementation with chapter-by-chapter generation, mock API system for cost-free development, comprehensive demo interface
-- **Frontend**: Production React app with authentication, payment processing, and book generation workflow
-- **Testing**: Mock endpoints, unit tests, demo presets for rapid development
-- **Deployment**: ✅ Marketing site live at proofbound.com, ✅ React app deployed to app.proofbound.com
-- **Environment Setup**: Centralized .env configuration, Vite integration with monorepo structure
-- **Development Workflow**: `task dev:all` runs both frontend and marketing simultaneously
+- **Main React App**: Production-ready with Supabase auth, Stripe payments
+- **Demo Route**: **NOW LIVE** with real HAL9 AI book generation
+- **HAL9 API Integration**: Complete book generation pipeline through Supabase Edge Functions
+- **Quarto Project Export**: Full downloadable Quarto projects with generated content
+- **Marketing Site**: Live at proofbound.com with simplified landing page
+- **Development Workflow**: Streamlined for rapid iteration
 
-### 🎯 Current Focus Areas
-1. **Frontend-API Integration**: Connect React app to refactored AI endpoints (packages/ai-clients)
-2. **Demo Route Implementation**: Add /demo to React app for lead generation
-3. **Lulu Integration**: Print-on-demand service integration
-4. **Elite Dashboard**: Internal tooling for manual book processing
+### 🎯 Current Architecture: HAL9 Direct Integration
+**Successfully Implemented HAL9 API Integration**
 
-### 🚀 Recent Achievements
-- **Deployment Success**: Fixed gitignore issues and deployed React app to app.proofbound.com
-- **Environment-Aware Navigation**: Marketing site Elite button and React app header logo correctly route between local and production environments
-- **Account Management**: Added comprehensive header with signin/signout, user menu, and navigation
-- **Version Management System**: Implemented semantic versioning with automated bump scripts and inconspicuous display
-- **Logo Navigation Convention**: Black logos → marketing site, Blue logos → React app home (environment-aware)
-- **Monorepo Task Integration**: Unified development commands with proper environment variable loading
+**✅ Production Architecture:**
+- **HAL9 API Integration**: Cost-effective AI book generation via existing edge functions
+- **Supabase Edge Functions**: `generate-toc`, `generate-content` for HAL9 API calls
+- **React Frontend**: Real-time AI integration with graceful fallbacks
+- **Quarto Project Generation**: Complete downloadable book projects
+- **TypeScript Integration**: Full type safety and HAL9 API compatibility
+
+### 🚀 Recent Achievements (July 4, 2025)
+- **HAL9 API Integration**: Complete book generation using existing edge functions
+- **Real AI Demo**: Replaced mock data with actual HAL9 AI-generated content
+- **Quarto Export**: Full project generation with chapters, config, and templates
+- **Content Cleaning**: Automatic removal of duplicate H1 titles for proper Quarto format
+- **Graceful Fallbacks**: Demo works reliably with both API success and failure scenarios
+- **Type Safety**: Comprehensive TypeScript types for all HAL9 API interactions
+
+### 🎯 Next Phase: Production Deployment
+1. **Test Integration**: Verify complete workflow with HAL9 API
+2. **Performance Optimization**: Monitor API costs and response times
+3. **User Experience**: Refine demo flow and error handling
+4. **Production Deploy**: Merge to main and deploy to production
+5. **Analytics**: Track demo usage and conversion rates
 
 ## Architecture Overview
-- `apps/main-app/frontend/` - Existing React app (Supabase auth, book generation)
-- `packages/ai-clients/` - Will contain HAL9 + OpenAI clients
-- `packages/cc-template/` - Will contain your Python book generation engine
-- `tools/` - Elite service internal tooling
+- `apps/main-app/frontend/` - React app with Supabase auth, payment processing
+- `packages/cc-template/` - Python CLI tool for Quarto book generation with AI
+- `apps/marketing/` - Quarto-based marketing site (proofbound.com)
+- `tools/` - Elite service internal tooling (planned)
 
 ## Key Technical Stack
-- Frontend: React + TypeScript + Supabase
-- Backend: FastAPI (to be unified)
-- AI: HAL9 API (cost-effective) + OpenAI (premium)
-- Publishing: Quarto pipeline + Lulu print-on-demand
-- Database: Supabase (will redesign schema)
+- **Frontend**: React + TypeScript + Supabase + Tailwind CSS
+- **Book Generation**: HAL9 API via Supabase Edge Functions
+- **AI Services**: HAL9 API (cost-effective book generation)
+- **Project Export**: Quarto → PDF/HTML/EPUB with JSZip download
+- **Database**: Supabase (auth, payments, user data, book projects)
+- **Publishing**: Quarto → PDF/HTML/EPUB + Lulu print-on-demand (future)
 
-## Development Roadmap
+## HAL9 API Integration (✅ Complete)
 
-### Week 1-2: Frontend-API Integration
-- Connect React app to new `/generate-book-chapters` endpoint
-- Implement demo route in React app with AI Clients API
-- Replace legacy API calls with modular endpoints
-- Add outline editing capabilities to main app
+### Phase 1: HAL9 Integration (✅ Complete)
+- **Book Service**: Central orchestration service for HAL9 API calls
+- **Edge Functions**: Utilize existing `generate-toc` and `generate-content` functions
+- **Type Safety**: Comprehensive TypeScript types for HAL9 API responses
+- **Content Processing**: Automatic cleaning of duplicate H1 titles for Quarto compatibility
+- **Error Handling**: Graceful fallbacks for reliable demo experience
 
-### Week 3: Print Integration & Elite Tools  
-- Lulu API integration for print-on-demand
-- Elite dashboard initial implementation
-- Quality control workflows
+### Phase 2: Quarto Export (✅ Complete)
+- **Project Generation**: Complete Quarto book projects with chapters, config, templates
+- **ZIP Download**: Client-side project packaging with JSZip
+- **Template System**: Comprehensive Quarto templates with proper frontmatter
+- **File Structure**: Proper chapter organization with slugified filenames
+- **Metadata Integration**: Book title, author, and outline data in Quarto config
 
-### Week 4: Launch Preparation
-- Payment flow optimization
-- Performance testing and monitoring
-- Marketing site content updates
-- Production deployment testing
+### Phase 3: Future Enhancements
+- **Database Integration**: Save/load book projects for authenticated users
+- **Publishing Pipeline**: Lulu API integration for print-on-demand
+- **Enhanced UI**: Project management interface with outline editing
+- **Analytics**: Usage tracking and conversion optimization
 
 ## Development Commands
 
@@ -121,17 +129,14 @@ pytest  # Run tests
 - Tailwind CSS for styling
 - Production-ready with full user authentication
 
-### AI Clients Package (`packages/ai-clients/`)
-- FastAPI server with multiple AI service integrations
-- Services: HAL9, OpenAI, Anthropic, Replicate
-- PDF generation with WeasyPrint
-- Cover generation and book compilation
-
 ### CC Template Package (`packages/cc-template/`)
-- CLI tool for Quarto book generation
-- Entry point: `cc-template` command
-- Templates in `/templates/` directory
-- Uses uv for modern Python dependency management
+- **Complete CLI tool** for Quarto book generation with AI integration
+- **Entry point**: `cc-template` command with subcommands (new, outline, generate, build, config)
+- **AI Integration**: OpenAI GPT-4 and Anthropic Claude APIs for content generation
+- **Template System**: Jinja2-based templates with YAML configuration
+- **Output Formats**: HTML, PDF, EPUB via Quarto rendering
+- **Project Structure**: Creates structured book projects with chapters, config, and build system
+- **Development**: Uses uv for modern Python dependency management
 
 ## Testing
 ```bash
